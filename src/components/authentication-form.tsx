@@ -54,7 +54,7 @@ export function SignInForm({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        router.push("/dashboard");
+        router.push("/home");
       }
     });
 
@@ -69,7 +69,7 @@ export function SignInForm({
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("Signed in:", userCredential.user);
-      router.push("/dashboard");
+      router.push("/home");
     } catch (error) {
       alert("Sign-in error: " + (error as any).message);
     }
@@ -138,7 +138,7 @@ export function SignUpForm({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        router.push("/dashboard");
+        router.push("/home");
       }
     });
 
@@ -155,7 +155,7 @@ export function SignUpForm({
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName });
       console.log("User registered:", userCredential.user);
-      router.push("/dashboard");
+      router.push("/home");
     } catch (error) {
       alert("Sign-up error:" + (error as any).message);
     }
