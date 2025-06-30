@@ -1,4 +1,8 @@
-export default function userPage({ params }: { params: { userId: string } }) {
+interface PageProps {
+  params: { userId: string };
+}
+
+export default function UserPage({ params }: PageProps) {
   return (
     <div>
       <h1>User Profile</h1>
