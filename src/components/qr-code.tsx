@@ -5,8 +5,8 @@ function QRCode() {
   const { Canvas } = useQRCode();
 
   return (
-    <Canvas
-      text={'https://github.com/bunlong/next-qrcode'}
+    <Canvas 
+      text={"https://reverse-social-app.vercel.app/home"}
       options={{
         errorCorrectionLevel: 'M',
         margin: 3,
