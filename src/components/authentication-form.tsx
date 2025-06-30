@@ -22,13 +22,13 @@ import { getFirestore } from "firebase/firestore";
 import { useRouter } from 'next/navigation';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAmjMFeuGOHOQlWyjYEKxp-GBEZdaTeNlk",
-  authDomain: "class-scribe-8f303.firebaseapp.com",
-  projectId: "class-scribe-8f303",
-  storageBucket: "class-scribe-8f303.firebasestorage.app",
-  messagingSenderId: "702753380407",
-  appId: "1:702753380407:web:afcb54477bb11cc39247b2",
-  measurementId: "G-VN15QS9X5T",
+  apiKey: "AIzaSyBXyjDL1YFtjho68s5hmcUy4n_putgoXdU",
+  authDomain: "reverse-social-app.firebaseapp.com",
+  projectId: "reverse-social-app",
+  storageBucket: "reverse-social-app.firebasestorage.app",
+  messagingSenderId: "845141928150",
+  appId: "1:845141928150:web:49349b76cdd1a934500177",
+  measurementId: "G-RWXYKW5980"
 };
 
 // Initialize Firebase
