@@ -3,10 +3,11 @@ import { useQRCode } from 'next-qrcode';
 
 type QRCodeProps = {
     text: string;
+    width: number;
     className?: string;
 };
 
-function QRCode({ text, className }: QRCodeProps) {
+function QRCode({ text, width, className }: QRCodeProps) {
     const { Canvas } = useQRCode();
 
     return (
@@ -15,9 +16,9 @@ function QRCode({ text, className }: QRCodeProps) {
                 text={text}
                 options={{
                     errorCorrectionLevel: 'M',
-                    margin: 3,
-                    scale: 4,
-                    width: 200,
+                    margin: 2,
+                    scale: 1,
+                    width: width,
                     color: {
                         dark: '#010599FF',
                         light: '#FFBF60FF',
