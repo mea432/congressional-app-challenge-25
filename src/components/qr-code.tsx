@@ -18,7 +18,6 @@ function QRCode({ text, width, className }: QRCodeProps) {
                 options={{
                     errorCorrectionLevel: 'M',
                     margin: 2,
-                    scale: 1,
                     width: width,
                     color: {
                         dark: '#010599FF',

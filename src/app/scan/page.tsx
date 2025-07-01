@@ -5,6 +5,7 @@ import QrScanner from 'qr-scanner';
 import QRCode from '@/components/qr-code';
 
 import PageProtected from '@/components/authentication';
+import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
 
 function QrScannerComponent() {
@@ -33,7 +34,7 @@ function QrScannerComponent() {
               }
             },
             {
-              highlightScanRegion: true,
+              highlightScanRegion: false,
               highlightCodeOutline: true,
             }
           );
@@ -98,7 +99,7 @@ function QrScannerComponent() {
 
       {/* Overlay content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
-        <h1 className="text-3xl font-bold mb-4">Scan a QR Code</h1>
+        <h1 className="text-3xl font-bold mb-4">Scan a friend's QR Code</h1>
 
         {scannedData && (
           <div className="bg-green-600 bg-opacity-80 p-4 rounded text-white text-lg">
@@ -136,23 +137,26 @@ export default function QrScanPage() {
     <PageProtected>
       {(user) => (
         <>
+          <TopNavbar />
           <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
             <QrScannerComponent />
 
             {expanded && qrSize !== null ? (
               <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 cursor-pointer"
+                className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-80 cursor-pointer"
                 onClick={() => setExpanded(false)}
               >
-                <div className="bg-white p-4 rounded shadow">
+                <span className="mb-2 text-white font-semibold">Your QR code</span>
+                <div className="bg-white p-4 rounded shadow flex flex-col items-center">
                   <QRCode text={user.uid} width={qrSize} />
                 </div>
               </div>
             ) : (
               <div
-                className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer"
+                className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer flex flex-col items-center"
                 onClick={() => setExpanded(true)}
               >
+                <span className="mb-1 text-white font-semibold drop-shadow-md">Your QR code</span>
                 <div className="bg-white bg-opacity-80 p-2 rounded shadow">
                   <QRCode text={user.uid} width={100} />
                 </div>

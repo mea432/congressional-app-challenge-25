@@ -1,6 +1,7 @@
 'use client';
 
 import PageProtected from "@/components/authentication";
+import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from "@/components/bottom-navbar";
 
 export default function Leaderboard() {
@@ -8,6 +9,7 @@ export default function Leaderboard() {
     <PageProtected>
       {(user) => (
         <>
+          <TopNavbar />
           <div>
             <h1>Leaderboard</h1>
             <p>Users who actually touch grass:</p>

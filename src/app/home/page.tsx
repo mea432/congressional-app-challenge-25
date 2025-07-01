@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import PageProtected from "@/components/authentication";
+import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from "@/components/bottom-navbar";
 
 export default function Home() {
@@ -10,6 +11,7 @@ export default function Home() {
     <PageProtected>
       {(user) => (
         <>
+          <TopNavbar />
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100">
             <h1 className="text-4xl font-bold mb-4">Welcome to the Home Page</h1>
             <p className="text-lg text-gray-700">This is the home page of your application.</p><br />
