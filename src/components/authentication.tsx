@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -218,4 +218,41 @@ export function SignUpForm({
       </Card>
     </div>
   )
+}
+
+
+
+
+
+
+interface PageProtectedProps {
+  children: (uid: string) => React.ReactNode;
+}
+
+export default function PageProtected({ children }: PageProtectedProps) {
+  const [user, setUser] = useState<User | null | undefined>(undefined);
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
+        router.push('/sign-in');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  if (user === undefined) {
+    return <p className="p-4">Loading...</p>;
+  }
+
+  if (user === null) {
+    return null; // briefly show nothing while redirecting
+  }
+
+  return <>{children(user.uid)}</>;
 }
