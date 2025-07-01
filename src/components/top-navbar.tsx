@@ -1,61 +1,100 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Settings, User } from 'lucide-react';
-import ProfileComponent from '@/components/profile';
-import SettingsComponent from '@/components/settings';
+import { usePathname } from 'next/navigation';
+import { ArrowLeft, Settings, User, UserPlus } from 'lucide-react';
+import ProfileComponent from './profile';
+import SettingsComponent from './settings';
+import AddFriendComponent from './add-friend';
 
 export default function TopNavbar() {
-  const [activeOverlay, setActiveOverlay] = useState<'profile' | 'settings' | null>(null);
+  const [activeOverlay, setActiveOverlay] = useState<'profile' | 'settings' | 'add-friend' | null>(null);
+  const pathname = usePathname();
 
   const handleBack = () => setActiveOverlay(null);
 
-  // Get overlay label
-  const overlayLabel = activeOverlay === 'profile' ? 'Profile' : activeOverlay === 'settings' ? 'Settings' : '';
+  const overlayLabel =
+    activeOverlay === null
+      ? ''
+      : {
+          profile: 'Profile',
+          settings: 'Settings',
+          'add-friend': 'Add Friend',
+        }[activeOverlay];
+
+  const pageTitleMap: Record<string, string> = {
+    '/home': 'Home',
+    '/scan': 'Scan',
+    '/leaderboard': 'Leaderboard',
+  };
+
+  const pageTitle = pageTitleMap[pathname] ?? '';
 
   return (
     <>
       {/* Top Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-52 px-4 py-3 flex justify-between items-center pointer-events-none">
-        {activeOverlay ? (
-          <div className="flex items-center justify-center space-x-2 pointer-events-auto h-full">
-            <button
-              onClick={handleBack}
-              className="bg-white shadow-md rounded-full p-2"
-            >
-              <ArrowLeft className="w-6 h-6 text-gray-700" />
-            </button>
-            <span className="text-lg font-medium text-black drop-shadow-sm">{overlayLabel}</span>
-          </div>
-        ) : (
-          <>
-            <button
-              onClick={() => setActiveOverlay('profile')}
-              className="pointer-events-auto bg-white shadow-md rounded-full p-2"
-            >
-              <User className="w-6 h-6 text-gray-700" />
-            </button>
+      <div className="fixed top-0 left-0 right-0 z-50 px-4 py-3 pointer-events-none">
+        <div className="relative flex items-center justify-between h-12">
+          {activeOverlay ? (
+            <div className="pointer-events-auto flex items-center space-x-2">
+              <button onClick={handleBack} className="bg-white shadow-md rounded-full p-2">
+                <ArrowLeft className="w-6 h-6 text-gray-700" />
+              </button>
+              <span className="text-lg font-medium text-black">{overlayLabel}</span>
+            </div>
+          ) : (
+            <>
+              {/* Left - Profile */}
+              <div className="pointer-events-auto">
+                <button
+                  onClick={() => setActiveOverlay('profile')}
+                  className="bg-white shadow-md rounded-full p-2"
+                >
+                  <User className="w-6 h-6 text-gray-700" />
+                </button>
+              </div>
 
-            <button
-              onClick={() => setActiveOverlay('settings')}
-              className="pointer-events-auto bg-white shadow-md rounded-full p-2"
-            >
-              <Settings className="w-6 h-6 text-gray-700" />
-            </button>
-          </>
-        )}
+              {/* Center - Page Title */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <div className="bg-white px-4 py-1 rounded-full shadow text-sm font-medium text-gray-800">
+                  {pageTitle}
+                </div>
+              </div>
+
+              {/* Right - Add Friend + Settings */}
+              <div className="pointer-events-auto flex space-x-3">
+                <button
+                  onClick={() => setActiveOverlay('add-friend')}
+                  className="bg-white shadow-md rounded-full p-2"
+                >
+                  <UserPlus className="w-6 h-6 text-gray-700" />
+                </button>
+                <button
+                  onClick={() => setActiveOverlay('settings')}
+                  className="bg-white shadow-md rounded-full p-2"
+                >
+                  <Settings className="w-6 h-6 text-gray-700" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Overlay Content */}
       {activeOverlay === 'profile' && (
-        <div className="fixed inset-0 z-51 bg-white overflow-auto pt-12">
+        <div className="fixed inset-0 z-40 bg-white overflow-auto pt-16">
           <ProfileComponent />
         </div>
       )}
-
       {activeOverlay === 'settings' && (
-        <div className="fixed inset-0 z-51 bg-white overflow-auto pt-12">
+        <div className="fixed inset-0 z-40 bg-white overflow-auto pt-16">
           <SettingsComponent />
+        </div>
+      )}
+      {activeOverlay === 'add-friend' && (
+        <div className="fixed inset-0 z-40 bg-white overflow-auto pt-16">
+          <AddFriendComponent />
         </div>
       )}
     </>

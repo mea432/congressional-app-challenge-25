@@ -10,9 +10,9 @@ export default function Leaderboard() {
       {(user) => (
         <>
           <TopNavbar />
-          <div>
-            <h1>Leaderboard</h1>
-            <p>Users who actually touch grass:</p>
+          <div className="pt-16 m-4">
+            <h1 className="text-2xl font-bold mb-2">Leaderboard</h1>
+            <p className="text-lg text-gray-700">Users who actually touch grass:</p>
             {/* Add leaderboard content here */}
           </div>
           <BottomNavbar />

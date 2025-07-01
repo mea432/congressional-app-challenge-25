@@ -99,7 +99,9 @@ function QrScannerComponent() {
 
       {/* Overlay content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
-        <h1 className="text-3xl font-bold mb-4">Scan a friend's QR Code</h1>
+        {!scannedData && (
+          <h1 className="text-3xl font-bold mb-4">Scan a friend's QR Code</h1>
+        )}
 
         {scannedData && (
           <div className="bg-green-600 bg-opacity-80 p-4 rounded text-white text-lg">
@@ -153,7 +155,7 @@ export default function QrScanPage() {
               </div>
             ) : (
               <div
-                className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer flex flex-col items-center"
+                className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer flex flex-col items-center"
                 onClick={() => setExpanded(true)}
               >
                 <span className="mb-1 text-white font-semibold drop-shadow-md">Your QR code</span>
