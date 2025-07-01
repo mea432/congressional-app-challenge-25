@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
+import QRCode from '@/components/qr-code';
 
 import PageProtected from '@/components/authentication';
 import BottomNavbar from '@/components/bottom-navbar';
@@ -79,7 +80,7 @@ function QrScannerComponent() {
   }, [scannedData]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black">
+    <div className="relative w-screen h-[calc(100vh-4rem)] overflow-hidden bg-black">
       {/* Video is hidden once frozen */}
       <video
         ref={videoRef}
@@ -116,11 +117,49 @@ function QrScannerComponent() {
 }
 
 export default function QrScanPage() {
+  const [expanded, setExpanded] = useState(false);
+  const [qrSize, setQrSize] = useState<number | null>(null); // use null initially
+
+  useEffect(() => {
+    const updateSize = () => {
+      console.log('Updating QR size based on window width:', window.innerWidth);
+      setQrSize(Math.min(window.innerWidth * 0.75, window.innerHeight * 0.75));
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
   return (
     <PageProtected>
-      {(uid) => (
+      {(user) => (
         <>
-          <QrScannerComponent />
+          <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
+            <QrScannerComponent />
+
+            {expanded && qrSize !== null ? (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 cursor-pointer"
+                onClick={() => setExpanded(false)}
+              >
+                <div className="bg-white p-4 rounded shadow">
+                  <QRCode text={user.uid} width={qrSize} />
+                </div>
+              </div>
+            ) : (
+              <div
+                className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer"
+                onClick={() => setExpanded(true)}
+              >
+                <div className="bg-white bg-opacity-80 p-2 rounded shadow">
+                  <QRCode text={user.uid} width={100} />
+                </div>
+              </div>
+            )}
+          </div>
+
           <BottomNavbar />
         </>
       )}

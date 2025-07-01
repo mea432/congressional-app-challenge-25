@@ -14,15 +14,15 @@ export default function BottomNavbar() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-inner z-50">
-      <div className="flex justify-around py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-inner z-50 h-16">
+      <div className="grid grid-cols-3 h-full py-3">
         {tabs.map(({ name, href, icon: Icon }) => {
           const active = pathname === href;
           return (
-            <Link key={name} href={href} className="flex flex-col items-center text-sm">
-              <Icon className={`w-6 h-6 ${active ? 'text-blue-600' : 'text-gray-400'}`} />
-              <span className={active ? 'text-blue-600' : 'text-gray-500'}>{name}</span>
-            </Link>
+        <Link key={name} href={href} className="flex flex-col items-center text-sm">
+          <Icon className={`w-6 h-6 ${active ? 'text-blue-600' : 'text-gray-400'}`} />
+          <span className={active ? 'text-blue-600' : 'text-gray-500'}>{name}</span>
+        </Link>
           );
         })}
       </div>

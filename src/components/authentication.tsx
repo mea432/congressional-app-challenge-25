@@ -226,7 +226,7 @@ export function SignUpForm({
 
 
 interface PageProtectedProps {
-  children: (uid: string) => React.ReactNode;
+  children: (user: User) => React.ReactNode;
 }
 
 export default function PageProtected({ children }: PageProtectedProps) {
@@ -247,12 +247,16 @@ export default function PageProtected({ children }: PageProtectedProps) {
   }, [router]);
 
   if (user === undefined) {
-    return <p className="p-4">Loading...</p>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="p-4">Loading...</p>
+      </div>
+    );
   }
 
   if (user === null) {
     return null; // briefly show nothing while redirecting
   }
 
-  return <>{children(user.uid)}</>;
+  return <>{children(user)}</>;
 }

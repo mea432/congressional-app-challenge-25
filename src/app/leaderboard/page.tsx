@@ -6,7 +6,7 @@ import BottomNavbar from "@/components/bottom-navbar";
 export default function Leaderboard() {
   return (
     <PageProtected>
-      {(uid) => (
+      {(user) => (
         <>
           <div>
             <h1>Leaderboard</h1>
