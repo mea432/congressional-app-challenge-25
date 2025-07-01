@@ -19,7 +19,7 @@ export default function TopNavbar() {
       : {
           profile: 'Profile',
           settings: 'Settings',
-          'add-friend': 'Add Friend',
+          'add-friend': 'Add Friends',
         }[activeOverlay];
 
   const pageTitleMap: Record<string, string> = {
