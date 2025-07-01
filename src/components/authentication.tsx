@@ -15,35 +15,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { User } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/app/firebaseConfig";
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 import { useRouter } from 'next/navigation';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBXyjDL1YFtjho68s5hmcUy4n_putgoXdU",
-  authDomain: "reverse-social-app.firebaseapp.com",
-  projectId: "reverse-social-app",
-  storageBucket: "reverse-social-app.firebasestorage.app",
-  messagingSenderId: "845141928150",
-  appId: "1:845141928150:web:49349b76cdd1a934500177",
-  measurementId: "G-RWXYKW5980"
-};
-
-// Initialize Firebase
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { signInWithEmailAndPassword } from "firebase/auth";
-
 
 export function SignInForm({
   className,
@@ -125,10 +102,6 @@ export function SignInForm({
   )
 }
 
-
-
-
-
 export function SignUpForm({
   className,
   ...props
@@ -148,19 +121,29 @@ export function SignUpForm({
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     const email = (e.target as any).email.value;
+    console.log("email", email);
     const password = (e.target as any).password.value;
     const displayName = (e.target as any).displayName.value;
-  
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName });
+
+      const uid = userCredential.user.uid;
+
+      // Create the user's document
+      const userDocRef = doc(db, "users", uid);
+      await setDoc(userDocRef, {
+        email,
+        displayName,
+      });
+
       console.log("User registered:", userCredential.user);
       router.push("/home");
     } catch (error) {
-      alert("Sign-up error:" + (error as any).message);
+      alert("Sign-up error: " + (error as any).message);
     }
   };
-
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -219,11 +202,6 @@ export function SignUpForm({
     </div>
   )
 }
-
-
-
-
-
 
 interface PageProtectedProps {
   children: (user: User) => React.ReactNode;
