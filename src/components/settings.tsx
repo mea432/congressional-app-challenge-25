@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { auth } from "@/app/firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import MainContent from "@/components/main-content";
-import Link from "next/link";
+import { Button } from "./ui/button";
 
 export default function SettingsComponent() {
   const [user, setUser] = useState<any>(null);
@@ -22,11 +22,11 @@ export default function SettingsComponent() {
           <div><b>UID:</b> {user.uid}</div>
           <div><b>Email:</b> {user.email}</div>
           <div><b>Display Name:</b> {user.displayName}</div>
-          <Link href="/sign-out">Sign Out</Link>
+          <Button onClick={() => signOut(auth)} className="text-sm cursor-pointer">Sign Out</Button>
           {/* Add more fields if needed */}
         </div>
       ) : (
-        <div>Loading user info...</div>
+        <div>Loading settings...</div>
       )}
     </MainContent>
   );
