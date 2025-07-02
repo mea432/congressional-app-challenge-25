@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageProtected from "@/components/authentication";
 import TopNavbar from "@/components/top-navbar";
@@ -84,7 +83,7 @@ function FriendsList({ user }: { user: any }) {
   }, [user]);
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full">
       <h2 className="text-2xl font-semibold mb-4">Your Friends</h2>
       <div className="space-y-2">
         {friends.length === 0 && <div className="text-gray-500">No friends yet.</div>}

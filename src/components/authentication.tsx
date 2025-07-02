@@ -21,7 +21,6 @@ import { auth, db } from "@/app/firebaseConfig";
 import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 import { useRouter } from 'next/navigation';
-import { MousePointerSquareDashed } from "lucide-react";
 
 export function SignInForm({
   className,

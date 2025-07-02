@@ -37,7 +37,7 @@ export default function TopNavbar() {
         <div className="relative flex items-center justify-between h-12">
           {activeOverlay ? (
             <div className="pointer-events-auto flex items-center space-x-2">
-              <button onClick={handleBack} className="bg-white shadow-md rounded-full p-2">
+              <button onClick={handleBack} className="bg-white shadow-md rounded-full p-2 cursor-pointer">
                 <ArrowLeft className="w-6 h-6 text-gray-700" />
               </button>
               <span className="text-lg font-medium text-black">{overlayLabel}</span>
@@ -48,7 +48,7 @@ export default function TopNavbar() {
               <div className="pointer-events-auto">
                 <button
                   onClick={() => setActiveOverlay('profile')}
-                  className="bg-white shadow-md rounded-full p-2"
+                  className="bg-white shadow-md rounded-full p-2 cursor-pointer"
                 >
                   <User className="w-6 h-6 text-gray-700" />
                 </button>
@@ -65,13 +65,13 @@ export default function TopNavbar() {
               <div className="pointer-events-auto flex space-x-3">
                 <button
                   onClick={() => setActiveOverlay('add-friend')}
-                  className="bg-white shadow-md rounded-full p-2"
+                  className="bg-white shadow-md rounded-full p-2 cursor-pointer"
                 >
                   <UserPlus className="w-6 h-6 text-gray-700" />
                 </button>
                 <button
                   onClick={() => setActiveOverlay('settings')}
-                  className="bg-white shadow-md rounded-full p-2"
+                  className="bg-white shadow-md rounded-full p-2 cursor-pointer"
                 >
                   <Settings className="w-6 h-6 text-gray-700" />
                 </button>

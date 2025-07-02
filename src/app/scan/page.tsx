@@ -8,6 +8,10 @@ import PageProtected from '@/components/authentication';
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
 
+function processMeetUp(code: string): string {
+  return code;
+}
+
 function QrScannerComponent() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -30,6 +34,7 @@ function QrScannerComponent() {
             (result) => {
               if (!scannedData) {
                 setScannedData(result.data);
+                processMeetUp(result.data);
                 freezeFrame();
               }
             },
@@ -47,14 +52,12 @@ function QrScannerComponent() {
     };
 
     const freezeFrame = () => {
-      // Stop scanner and camera
       scannerRef.current?.stop();
 
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
-      // Draw current video frame to canvas
       if (videoRef.current && canvasRef.current) {
         const video = videoRef.current;
         const canvas = canvasRef.current;
@@ -71,7 +74,6 @@ function QrScannerComponent() {
 
     startScanner();
 
-    // Cleanup on unmount
     return () => {
       scannerRef.current?.stop();
       if (streamRef.current) {
@@ -82,7 +84,6 @@ function QrScannerComponent() {
 
   return (
     <div className="relative w-screen h-[calc(100vh-4rem)] overflow-hidden bg-black">
-      {/* Video is hidden once frozen */}
       <video
         ref={videoRef}
         className={`absolute top-0 left-0 w-full h-full object-cover ${frozen ? 'hidden' : ''}`}
@@ -91,13 +92,11 @@ function QrScannerComponent() {
         playsInline
       />
 
-      {/* Canvas to show frozen frame */}
       <canvas
         ref={canvasRef}
         className={`absolute top-0 left-0 w-full h-full object-cover ${frozen ? '' : 'hidden'}`}
       />
 
-      {/* Overlay content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
         {!scannedData && (
           <h1 className="text-3xl font-bold mb-4">Scan a friend's QR Code</h1>
@@ -121,11 +120,11 @@ function QrScannerComponent() {
 
 export default function QrScanPage() {
   const [expanded, setExpanded] = useState(false);
-  const [qrSize, setQrSize] = useState<number | null>(null); // use null initially
+  const [qrSize, setQrSize] = useState<number | null>(null);
+  const [qrText, setQrText] = useState<string>('');
 
   useEffect(() => {
     const updateSize = () => {
-      console.log('Updating QR size based on window width:', window.innerWidth);
       setQrSize(Math.min(window.innerWidth * 0.75, window.innerHeight * 0.75));
     };
 
@@ -135,40 +134,86 @@ export default function QrScanPage() {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    let isMounted = true;
+
+    const updateQrText = async () => {
+      let geo = 'unknown,unknown';
+      if (navigator.geolocation) {
+        try {
+          geo = await new Promise<string>((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              pos => resolve(`${pos.coords.latitude},${pos.coords.longitude}`),
+              () => resolve('unknown,unknown'),
+              { timeout: 5000 }
+            );
+          });
+        } catch {
+          geo = 'unknown,unknown';
+        }
+      }
+      if (isMounted && typeof window !== 'undefined') {
+        const userUid = (window as any).__currentUserUid || ''; // fallback if user is not available
+        setQrText(`${userUid},${Date.now()},${geo}`);
+      }
+    };
+
+    // This effect expects user.uid to be available in the closure.
+    // We'll set it in the render function below.
+    setTimeout(updateQrText, 250);
+    interval = setInterval(updateQrText, 2500);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <PageProtected>
-      {(user) => (
-        <>
-          <TopNavbar />
-          <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
-            <QrScannerComponent />
+      {(user) => {
+        // Set user.uid globally for the QR text updater effect
+        if (typeof window !== 'undefined') {
+          (window as any).__currentUserUid = user.uid;
+        }
 
-            {expanded && qrSize !== null ? (
-              <div
-                className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-80 cursor-pointer"
-                onClick={() => setExpanded(false)}
-              >
-                <span className="mb-2 text-white font-semibold">Your QR code</span>
-                <div className="bg-white p-4 rounded shadow flex flex-col items-center">
-                  <QRCode text={user.uid} width={qrSize} />
-                </div>
-              </div>
-            ) : (
-              <div
-                className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer flex flex-col items-center"
-                onClick={() => setExpanded(true)}
-              >
-                <span className="mb-1 text-white font-semibold drop-shadow-md">Your QR code</span>
-                <div className="bg-white bg-opacity-80 p-2 rounded shadow">
-                  <QRCode text={user.uid} width={100} />
-                </div>
-              </div>
-            )}
-          </div>
+        return (
+          <>
+            <TopNavbar />
+            <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
+              <QrScannerComponent />
 
-          <BottomNavbar />
-        </>
-      )}
+              {expanded && qrSize !== null ? (
+                <div
+                  className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-80 cursor-pointer"
+                  onClick={() => setExpanded(false)}
+                >
+                  <span className="mb-2 text-white font-semibold">Your QR code</span>
+                  <div className="bg-white p-4 rounded shadow flex flex-col items-center">
+                    <QRCode
+                      text={qrText || '0'}
+                      width={qrSize}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer flex flex-col items-center"
+                  onClick={() => setExpanded(true)}
+                >
+                  <span className="mb-1 text-white font-semibold drop-shadow-md">Your QR code</span>
+                  <div className="bg-white bg-opacity-80 p-2 rounded shadow">
+                    <QRCode text={qrText || '0'} width={100} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <BottomNavbar />
+          </>
+        );
+      }}
     </PageProtected>
   );
 }
