@@ -8,7 +8,7 @@ import { db } from "@/app/firebaseConfig";
 import { collection, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
 import MainContent from "@/components/main-content";
 
-function FriendInfo({ friendId, connectionId, onClose, currentUserId, onFriendRemoved }: { friendId: string, connectionId: string, onClose: () => void, currentUserId: string, onFriendRemoved: () => void }) {
+function FriendInfo({ friendId, connectionId, streak, onClose, currentUserId, onFriendRemoved }: { friendId: string, connectionId: string, streak: number | undefined, onClose: () => void, currentUserId: string, onFriendRemoved: () => void }) {
   // Remove friend logic
   const handleRemoveFriend = async () => {
     if (!currentUserId || !friendId || !connectionId) return;
@@ -29,10 +29,13 @@ function FriendInfo({ friendId, connectionId, onClose, currentUserId, onFriendRe
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded shadow-lg min-w-[300px] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500">✕</button>
+        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 cursor-pointer">✕</button>
         <h2 className="text-xl font-bold mb-2">Friend Info</h2>
         <p><b>Friend ID:</b> {friendId}</p>
         <p><b>Connection ID:</b> {connectionId}</p>
+        {streak !== undefined && (
+          <p><b>Streak:</b> {streak}</p>
+        )}
         {/* Add more friend info here if needed */}
         <button
           onClick={handleRemoveFriend}
@@ -47,7 +50,7 @@ function FriendInfo({ friendId, connectionId, onClose, currentUserId, onFriendRe
 
 function FriendsList({ user }: { user: any }) {
   const [friends, setFriends] = useState<any[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<{ friendId: string, connectionId: string } | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<{ friendId: string, connectionId: string, streak?: number } | null>(null);
 
   const fetchFriends = async () => {
     const friendsCol = collection(db, `users/${user.uid}/friends`);
@@ -65,12 +68,21 @@ function FriendsList({ user }: { user: any }) {
         email = userData.email;
         avatar = userData.avatar;
       }
+
+      let streak = undefined;
+      const connectionDoc = await getDoc(doc(db, "connections", data.connectionId));
+      if (connectionDoc.exists()) {
+        const connectionData = connectionDoc.data();
+        streak = connectionData.streak || undefined;
+      }
+      
       return {
         id: docSnap.id,
         ...data,
         displayName,
         email,
         avatar,
+        streak,
       };
     }));
     setFriends(friendsList);
@@ -91,14 +103,18 @@ function FriendsList({ user }: { user: any }) {
           <button
             key={friend.friendId}
             className="flex items-center gap-4 w-full bg-white rounded shadow p-3 hover:bg-gray-50 transition border cursor-pointer"
-            onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId })}
+            onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak })}
           >
             <img
               src={friend.avatar} // Use a default avatar if none exists
               alt="avatar"
               className="w-10 h-10 rounded-full border object-cover object-center"
             />
-            <span className="text-lg font-medium">{friend.displayName}</span>
+            <span className="text-lg font-medium">{friend.displayName}
+              {friend.streak !== undefined && (
+                <span className="ml-2 text-sm text-gray-500">Streak: {friend.streak}</span>
+              )}
+            </span>
           </button>
         ))}
       </div>
@@ -107,6 +123,7 @@ function FriendsList({ user }: { user: any }) {
           friendId={selectedFriend.friendId}
           connectionId={selectedFriend.connectionId}
           currentUserId={user.uid}
+          streak={selectedFriend.streak}
           onClose={() => setSelectedFriend(null)}
           onFriendRemoved={fetchFriends}
         />

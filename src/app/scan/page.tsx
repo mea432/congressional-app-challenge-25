@@ -216,6 +216,37 @@ function QrScannerComponent() {
 }
 
 export default function QrScanPage() {
+  const [showPermissionPopup, setShowPermissionPopup] = useState(() => {
+    if (typeof navigator === "undefined") return true;
+    // Check camera permission
+    const cameraPromise = navigator.permissions?.query({ name: "camera" as PermissionName }).then(res => res.state === "granted");
+    // Check geolocation permission
+    const geoPromise = navigator.permissions?.query({ name: "geolocation" as PermissionName }).then(res => res.state === "granted");
+    // If permissions API is not available, show popup by default
+    if (!cameraPromise || !geoPromise) return true;
+    // This is a sync initializer, so we can't await. Assume not granted, will update in useEffect.
+    return true;
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkPermissions() {
+      if (typeof navigator === "undefined" || !navigator.permissions) return;
+      try {
+        const [camera, geo] = await Promise.all([
+          navigator.permissions.query({ name: "camera" as PermissionName }),
+          navigator.permissions.query({ name: "geolocation" as PermissionName }),
+        ]);
+        if (!cancelled) {
+          setShowPermissionPopup(!(camera.state === "granted" && geo.state === "granted"));
+        }
+      } catch {
+        if (!cancelled) setShowPermissionPopup(true);
+      }
+    }
+    checkPermissions();
+    return () => { cancelled = true; };
+  }, []);
   const [expanded, setExpanded] = useState(false);
   const [qrSize, setQrSize] = useState<number | null>(null);
   const [qrText, setQrText] = useState<string>('');
@@ -278,6 +309,22 @@ export default function QrScanPage() {
         return (
           <>
             <TopNavbar />
+            {showPermissionPopup && (
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90">
+              <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full flex flex-col items-center">
+                <h2 className="text-xl font-bold mb-4 text-center">Permissions Required</h2>
+                <p className="mb-4 text-gray-700 text-center">
+                  This app needs access to your <b>camera</b> to scan your friend's QR code, and your <b>location</b> to verify you are together for a meetup.
+                </p>
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded transition"
+                  onClick={() => setShowPermissionPopup(false)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+            )}
             <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
               <QrScannerComponent />
 
