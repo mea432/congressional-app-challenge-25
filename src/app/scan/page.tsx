@@ -8,8 +8,42 @@ import PageProtected from '@/components/authentication';
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
 
-function processMeetUp(code: string): string {
-  return code;
+function processMeetUp(code: string): boolean {
+  const friendId = code.split(',')[0];
+  const timestamp = code.split(',')[1];
+  const geo = code.split(',')[2];
+  const [lat, lon] = geo.split(':');
+
+  if (Date.now() - parseInt(timestamp) > 10000) {
+    return false;
+  } else if (navigator.geolocation) {
+    let isNearby = false;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const toRad = (value: number) => (value * Math.PI) / 180;
+        const R = 6371000; // meters
+        const dLat = toRad(parseFloat(lat) - pos.coords.latitude);
+        const dLon = toRad(parseFloat(lon) - pos.coords.longitude);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(pos.coords.latitude)) *
+            Math.cos(toRad(parseFloat(lat))) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+        if (distance <= 100) {
+          isNearby = true;
+        }
+      },
+      () => {
+        isNearby = false;
+      }
+    );
+    return isNearby;
+  }
+
+  return true;
 }
 
 function QrScannerComponent() {
@@ -18,6 +52,7 @@ function QrScannerComponent() {
   const [scannedData, setScannedData] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [frozen, setFrozen] = useState(false);
+  const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<boolean>(false);
   const scannerRef = useRef<QrScanner | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -34,7 +69,7 @@ function QrScannerComponent() {
             (result) => {
               if (!scannedData) {
                 setScannedData(result.data);
-                processMeetUp(result.data);
+                setProcessMeetUpSuccess(processMeetUp(result.data))
                 freezeFrame();
               }
             },
@@ -108,6 +143,12 @@ function QrScannerComponent() {
           </div>
         )}
 
+        {processMeetUpSuccess && (
+          <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
+            🎉 Meetup confirmed! Streak: ___
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             ⚠️ Error: {error}
@@ -144,7 +185,7 @@ export default function QrScanPage() {
         try {
           geo = await new Promise<string>((resolve) => {
             navigator.geolocation.getCurrentPosition(
-              pos => resolve(`${pos.coords.latitude},${pos.coords.longitude}`),
+              pos => resolve(`${pos.coords.latitude}:${pos.coords.longitude}`),
               () => resolve('unknown,unknown'),
               { timeout: 5000 }
             );
@@ -186,7 +227,7 @@ export default function QrScanPage() {
 
               {expanded && qrSize !== null ? (
                 <div
-                  className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-80 cursor-pointer"
+                  className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-80 cursor-pointer"
                   onClick={() => setExpanded(false)}
                 >
                   <span className="mb-2 text-white font-semibold">Your QR code</span>
