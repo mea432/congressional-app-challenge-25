@@ -137,7 +137,6 @@ export default function AddFriendComponent() {
       await deleteDoc(doc(db, `users/${currentUserId}/inFriendRequests`, fromUserId));
       await deleteDoc(doc(db, `users/${fromUserId}/outFriendRequests`, currentUserId));
       await fetchRequests(currentUserId);
-      alert("Friend request accepted!");
     } catch (err) {
       console.error("Error accepting request:", err);
       alert("Failed to accept friend request");

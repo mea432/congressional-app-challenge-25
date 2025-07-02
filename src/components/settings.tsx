@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { auth } from "@/app/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import MainContent from "@/components/main-content";
+import Link from "next/link";
 
 export default function SettingsComponent() {
   const [user, setUser] = useState<any>(null);
@@ -21,7 +22,7 @@ export default function SettingsComponent() {
           <div><b>UID:</b> {user.uid}</div>
           <div><b>Email:</b> {user.email}</div>
           <div><b>Display Name:</b> {user.displayName}</div>
-          {user.photoURL && <div><b>Photo URL:</b> {user.photoURL}</div>}
+          <Link href="/sign-out">Sign Out</Link>
           {/* Add more fields if needed */}
         </div>
       ) : (
