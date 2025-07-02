@@ -12,7 +12,7 @@ import { auth, db } from '@/app/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { addDoc, collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 
-async function processMeetUp(code: string): Promise<[boolean, string]> {
+async function processMeetUp(code: string): Promise<[boolean, string, number?, boolean?]> {
   const [friendId, timestamp, friendLat, friendLon] = code.split(',');
 
   if (Date.now() - parseInt(timestamp) > 10000) {
@@ -51,6 +51,50 @@ async function processMeetUp(code: string): Promise<[boolean, string]> {
 
       const meetupsCollectionRef = collection(db, "connections", connectionId, "meetups");
 
+      const meetupsSnapshot = await getDocs(meetupsCollectionRef);
+      let lastMeetup: any = null;
+      meetupsSnapshot.forEach(doc => {
+        const data = doc.data();
+        if (!lastMeetup || data.timestamp > lastMeetup.timestamp) {
+          lastMeetup = data;
+        }
+      });
+
+      let streak = 1;
+      let streakIncreased = false;
+
+      if (lastMeetup) {
+        const lastDate = new Date(lastMeetup.timestamp);
+        const now = new Date();
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const lastDateDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+
+        if (lastDateDay.getTime() !== yesterday.getTime()) {
+          const connectionRef = doc(db, "connections", connectionId);
+          await setDoc(connectionRef, { streak: 1, streak_expire: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2) }, { merge: true });
+        } else {
+          const connectionRef = doc(db, "connections", connectionId);
+          const connectionSnap = await getDoc(connectionRef);
+          streak = 2;
+          if (connectionSnap.exists()) {
+            const data = connectionSnap.data();
+            if (typeof data.streak === "number") {
+              streak = data.streak + 1;
+              streakIncreased = true;
+
+              // Update points for both users
+              const userRef = doc(db, "users", userUid);
+              const friendRef = doc(db, "users", friendId);
+
+              await setDoc(userRef, { points: (friendDoc.data()?.points || 0) + 1 }, { merge: true });
+              const friendSnap = await getDoc(friendRef);
+              await setDoc(friendRef, { points: (friendSnap.data()?.points || 0) + 1 }, { merge: true });
+            }
+          }
+          await setDoc(connectionRef, { streak, streak_expire: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2) }, { merge: true });
+        }
+      }
+
       const newMeetup = {
         timestamp: Date.now(),
         lat: userLat,
@@ -59,7 +103,7 @@ async function processMeetUp(code: string): Promise<[boolean, string]> {
 
       await addDoc(meetupsCollectionRef, newMeetup);
 
-      return [true, "Success"];
+      return [true, "Success", streak, streakIncreased];
     } else {
       return [false, "Too far away from friend"];
     }
@@ -74,7 +118,7 @@ function QrScannerComponent() {
   const [scannedData, setScannedData] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [frozen, setFrozen] = useState(false);
-  const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<[boolean, string] | null>(null);
+  const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<[boolean, string, number?, boolean?] | null>(null);
   const scannerRef = useRef<QrScanner | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const hasScanned = useRef(false);
@@ -150,7 +194,8 @@ function QrScannerComponent() {
 
         {(processMeetUpSuccess && processMeetUpSuccess[0] == true) && (
           <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
-            🎉 Meetup confirmed! Streak: ___
+            🎉 Meetup confirmed! Streak: {processMeetUpSuccess[2]}
+            {processMeetUpSuccess[3] ? ' (Streak increased! Maybe add a cool animation or whatnot similar to duolingo)' : ' (Streak not increased)'}
           </div>
         )}
 
