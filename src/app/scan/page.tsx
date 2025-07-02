@@ -136,9 +136,9 @@ function QrScannerComponent() {
           <h1 className="text-3xl font-bold mb-4">Scan a friend's QR Code</h1>
         )}
 
-        {scannedData && (
+        {scannedData && !processMeetUpSuccess && (
           <div className="bg-green-600 bg-opacity-80 p-4 rounded text-white text-lg">
-            ✅ Scanned: <strong>{scannedData}</strong>
+            ✅ Scanned: <strong>Loading</strong>
           </div>
         )}
 
