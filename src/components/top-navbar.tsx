@@ -83,17 +83,17 @@ export default function TopNavbar() {
 
       {/* Overlay Content */}
       {activeOverlay === 'profile' && (
-        <div className="fixed inset-0 z-40 bg-white overflow-auto pt-16">
+        <div className="fixed inset-0 z-40 bg-white overflow-auto">
           <ProfileComponent />
         </div>
       )}
       {activeOverlay === 'settings' && (
-        <div className="fixed inset-0 z-40 bg-white overflow-auto pt-16">
+        <div className="fixed inset-0 z-40 bg-white overflow-auto">
           <SettingsComponent />
         </div>
       )}
       {activeOverlay === 'add-friend' && (
-        <div className="fixed inset-0 z-40 bg-white overflow-auto pt-16">
+        <div className="fixed inset-0 z-40 bg-white overflow-auto">
           <AddFriendComponent />
         </div>
       )}

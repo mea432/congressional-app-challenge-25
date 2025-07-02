@@ -3,6 +3,7 @@
 import PageProtected from "@/components/authentication";
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from "@/components/bottom-navbar";
+import MainContent from "@/components/main-content";
 
 export default function Leaderboard() {
   return (
@@ -10,11 +11,11 @@ export default function Leaderboard() {
       {(user) => (
         <>
           <TopNavbar />
-          <div className="pt-16 m-4">
+          <MainContent>
             <h1 className="text-2xl font-bold mb-2">Leaderboard</h1>
             <p className="text-lg text-gray-700">Users who actually touch grass:</p>
             {/* Add leaderboard content here */}
-          </div>
+          </MainContent>
           <BottomNavbar />
         </>
       )}

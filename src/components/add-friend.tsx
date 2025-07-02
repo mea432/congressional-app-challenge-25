@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { auth, db } from "@/app/firebaseConfig";
+import MainContent from "@/components/main-content";
 
 export default function AddFriendComponent() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -23,6 +24,7 @@ export default function AddFriendComponent() {
   const [results, setResults] = useState<any[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // Fetch requests logic as a callback so it can be reused
   const fetchRequests = useCallback(async (uid: string) => {
@@ -73,6 +75,7 @@ export default function AddFriendComponent() {
 
   const handleSearch = async () => {
     if (!search) return;
+    setHasSearched(true);
     const q = query(collection(db, "users"), where("email", "==", search));
     const querySnapshot = await getDocs(q);
     const users = querySnapshot.docs
@@ -107,7 +110,6 @@ export default function AddFriendComponent() {
       setSearch("");
       setResults([]);
       await fetchRequests(currentUserId);
-      alert("Friend request sent!");
     } catch (err) {
       console.error("Error sending request:", err);
       alert("Failed to send friend request");
@@ -148,7 +150,6 @@ export default function AddFriendComponent() {
       await deleteDoc(doc(db, `users/${currentUserId}/inFriendRequests`, fromUserId));
       await deleteDoc(doc(db, `users/${fromUserId}/outFriendRequests`, currentUserId));
       await fetchRequests(currentUserId);
-      alert("Friend request declined.");
     } catch (err) {
       console.error("Error declining request:", err);
       alert("Failed to decline friend request");
@@ -161,7 +162,6 @@ export default function AddFriendComponent() {
       await deleteDoc(doc(db, `users/${currentUserId}/outFriendRequests`, toUserId));
       await deleteDoc(doc(db, `users/${toUserId}/inFriendRequests`, currentUserId));
       await fetchRequests(currentUserId);
-      alert("Friend request canceled.");
     } catch (err) {
       console.error("Error canceling request:", err);
       alert("Failed to cancel friend request");
@@ -169,7 +169,7 @@ export default function AddFriendComponent() {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
+    <MainContent>
       <h2 className="text-2xl font-bold mb-4">Add a Friend</h2>
       <div className="flex gap-2 mb-4">
         <Input
@@ -177,25 +177,34 @@ export default function AddFriendComponent() {
           placeholder="Enter email"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
         />
-        <Button onClick={handleSearch}>Search</Button>
+        <Button onClick={handleSearch} className="cursor-pointer">Search</Button>
       </div>
 
       <div className="space-y-2 mb-8">
-        {results.map((user) => (
-          <div
-            key={user.id}
-            className="flex items-center justify-between border p-2 rounded"
-          >
-            <span>{user.displayName || user.email}</span>
-            <Button
-              onClick={() => sendFriendRequest(user.id)}
-              className="text-sm"
+        {hasSearched && results.length === 0 ? (
+          <div className="text-gray-500">No users found.</div>
+        ) : (
+          results.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center justify-between border p-2 rounded"
             >
-              Add
-            </Button>
-          </div>
-        ))}
+              <span>{user.displayName} ({user.email})</span>
+              <Button
+                onClick={() => sendFriendRequest(user.id)}
+                className="text-sm cursor-pointer"
+              >
+                Add
+              </Button>
+            </div>
+          ))
+        )}
       </div>
 
       <div className="mb-8">
@@ -203,10 +212,10 @@ export default function AddFriendComponent() {
         {incomingRequests.length === 0 && <div className="text-gray-500">No incoming requests.</div>}
         {incomingRequests.map((user) => (
           <div key={user.id} className="flex items-center justify-between border p-2 rounded mb-2">
-            <span>{user.displayName || user.email}</span>
+            <span>{user.displayName} ({user.email})</span>
             <div className="flex gap-2">
-              <Button onClick={() => acceptFriendRequest(user.id)} className="text-sm">Accept</Button>
-              <Button onClick={() => declineFriendRequest(user.id)} className="text-sm" variant="outline">Decline</Button>
+              <Button onClick={() => acceptFriendRequest(user.id)} className="text-sm cursor-pointer">Accept</Button>
+              <Button onClick={() => declineFriendRequest(user.id)} className="text-sm cursor-pointer" variant="outline">Decline</Button>
             </div>
           </div>
         ))}
@@ -217,11 +226,11 @@ export default function AddFriendComponent() {
         {sentRequests.length === 0 && <div className="text-gray-500">No sent requests.</div>}
         {sentRequests.map((user) => (
           <div key={user.id} className="flex items-center justify-between border p-2 rounded mb-2">
-            <span>{user.displayName || user.email}</span>
-            <Button onClick={() => cancelSentRequest(user.id)} className="text-sm" variant="outline">Cancel</Button>
+            <span>{user.displayName} ({user.email})</span>
+            <Button onClick={() => cancelSentRequest(user.id)} className="text-sm cursor-pointer" variant="outline">Cancel</Button>
           </div>
         ))}
       </div>
-    </div>
+    </MainContent>
   );
 }
