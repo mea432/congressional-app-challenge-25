@@ -1,15 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { ArrowLeft, Settings, User, UserPlus } from 'lucide-react';
 import ProfileComponent from './profile';
 import SettingsComponent from './settings';
 import AddFriendComponent from './add-friend';
+import { auth, db } from '@/app/firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, getDocs } from 'firebase/firestore';
 
 export default function TopNavbar() {
   const [activeOverlay, setActiveOverlay] = useState<'profile' | 'settings' | 'add-friend' | null>(null);
   const pathname = usePathname();
+  const [hasIncomingRequests, setHasIncomingRequests] = useState(false);
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    let currentUid: string | null = null;
+    const checkRequests = async (uid: string) => {
+      const inReqCol = collection(db, `users/${uid}/inFriendRequests`);
+      const snapshot = await getDocs(inReqCol);
+      setHasIncomingRequests(snapshot.size > 0);
+    };
+    unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUid = user.uid;
+        checkRequests(user.uid);
+      } else {
+        setHasIncomingRequests(false);
+      }
+    });
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   const handleBack = () => setActiveOverlay(null);
 
@@ -65,9 +90,12 @@ export default function TopNavbar() {
               <div className="pointer-events-auto flex space-x-3">
                 <button
                   onClick={() => setActiveOverlay('add-friend')}
-                  className="bg-white shadow-md rounded-full p-2 cursor-pointer"
+                  className="bg-white shadow-md rounded-full p-2 relative"
                 >
                   <UserPlus className="w-6 h-6 text-gray-700" />
+                  {hasIncomingRequests && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                  )}
                 </button>
                 <button
                   onClick={() => setActiveOverlay('settings')}
