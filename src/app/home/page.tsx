@@ -59,16 +59,19 @@ function FriendsList({ user }: { user: any }) {
       const userDocSnap = await getDoc(doc(db, "users", data.friendId));
       let displayName = data.friendId;
       let email = undefined;
+      let avatar = undefined;
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
         displayName = userData.displayName || data.friendId;
         email = userData.email;
+        avatar = userData.avatar;
       }
       return {
         id: docSnap.id,
         ...data,
         displayName,
         email,
+        avatar,
       };
     }));
     setFriends(friendsList);
@@ -92,9 +95,9 @@ function FriendsList({ user }: { user: any }) {
             onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId })}
           >
             <img
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(friend.displayName)}`}
+              src={friend.avatar} // Use a default avatar if none exists
               alt="avatar"
-              className="w-10 h-10 rounded-full border"
+              className="w-10 h-10 rounded-full border object-cover object-center"
             />
             <span className="text-lg font-medium">{friend.displayName}</span>
           </button>

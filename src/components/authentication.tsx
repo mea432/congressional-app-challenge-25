@@ -21,6 +21,7 @@ import { auth, db } from "@/app/firebaseConfig";
 import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 import { useRouter } from 'next/navigation';
+import { MousePointerSquareDashed } from "lucide-react";
 
 export function SignInForm({
   className,
@@ -136,6 +137,8 @@ export function SignUpForm({
       await setDoc(userDocRef, {
         email,
         displayName,
+        points: 0,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`,
       });
 
       console.log("User registered:", userCredential.user);
