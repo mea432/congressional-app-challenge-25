@@ -8,42 +8,40 @@ import PageProtected from '@/components/authentication';
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
 
-function processMeetUp(code: string): boolean {
-  const friendId = code.split(',')[0];
-  const timestamp = code.split(',')[1];
-  const geo = code.split(',')[2];
-  const [lat, lon] = geo.split(':');
+function processMeetUp(code: string): [boolean, string] {
+  const [friendId, timestamp, friendLat, friendLon] = code.split(',');
+
+  console.log("friend location:", friendLat, friendLon);
 
   if (Date.now() - parseInt(timestamp) > 10000) {
-    return false;
+    return [false, "QR code expired"];
   } else if (navigator.geolocation) {
-    let isNearby = false;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const toRad = (value: number) => (value * Math.PI) / 180;
-        const R = 6371000; // meters
-        const dLat = toRad(parseFloat(lat) - pos.coords.latitude);
-        const dLon = toRad(parseFloat(lon) - pos.coords.longitude);
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(toRad(pos.coords.latitude)) *
-            Math.cos(toRad(parseFloat(lat))) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = R * c;
-        if (distance <= 100) {
-          isNearby = true;
+        const userLat = pos.coords.latitude;
+        const userLon = pos.coords.longitude;
+        console.log("my location:", userLat, userLon);
+        const distance = Math.sqrt(
+          Math.pow(userLat - parseFloat(friendLat), 2) +
+          Math.pow(userLon - parseFloat(friendLon), 2)
+        );
+        console.log("distance:", distance);
+        if (distance < 0.0009) {
+          console.log("User is within 100m of friend");
+          return [true, "Success"];
+        } else {
+          console.log("User is too far from friend");
+          return [false, "You are too far from your friend to meet up"];
         }
       },
       () => {
-        isNearby = false;
+        alert("Geolocation permission denied");
+        return [false, "Geolocation permission denied"];
       }
     );
-    return isNearby;
   }
 
-  return true;
+  return [true, "Success"];
 }
 
 function QrScannerComponent() {
@@ -52,7 +50,7 @@ function QrScannerComponent() {
   const [scannedData, setScannedData] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [frozen, setFrozen] = useState(false);
-  const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<boolean>(false);
+  const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<[boolean, string] | null>(null);
   const scannerRef = useRef<QrScanner | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -69,7 +67,8 @@ function QrScannerComponent() {
             (result) => {
               if (!scannedData) {
                 setScannedData(result.data);
-                setProcessMeetUpSuccess(processMeetUp(result.data))
+                console.log("Scanned data:", result.data);
+                setProcessMeetUpSuccess(processMeetUp(result.data));
                 freezeFrame();
               }
             },
@@ -143,9 +142,15 @@ function QrScannerComponent() {
           </div>
         )}
 
-        {processMeetUpSuccess && (
+        {processMeetUpSuccess && processMeetUpSuccess[0] == true && (
           <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             🎉 Meetup confirmed! Streak: ___
+          </div>
+        )}
+
+        {processMeetUpSuccess && processMeetUpSuccess[0] === false && (
+          <div className="bg-yellow-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
+            ❌ Meetup failed. Please try again. {processMeetUpSuccess[1]}
           </div>
         )}
 
@@ -185,7 +190,7 @@ export default function QrScanPage() {
         try {
           geo = await new Promise<string>((resolve) => {
             navigator.geolocation.getCurrentPosition(
-              pos => resolve(`${pos.coords.latitude}:${pos.coords.longitude}`),
+              pos => resolve(`${pos.coords.latitude},${pos.coords.longitude}`),
               () => resolve('unknown,unknown'),
               { timeout: 5000 }
             );
