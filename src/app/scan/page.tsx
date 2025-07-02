@@ -8,6 +8,10 @@ import PageProtected from '@/components/authentication';
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
 
+import { auth, db } from '@/app/firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import { addDoc, collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+
 async function processMeetUp(code: string): Promise<[boolean, string]> {
   const [friendId, timestamp, friendLat, friendLon] = code.split(',');
 
@@ -36,12 +40,30 @@ async function processMeetUp(code: string): Promise<[boolean, string]> {
     }
 
     if (distance < 0.0009) {
-      console.log("Backend for more processing would be called here");
+      const userUid = (window as any).__currentUserUid || '';
+      const friendDocRef = doc(db, "users", userUid, "friends", friendId);
+      const friendDoc = await getDoc(friendDocRef);
+
+      if (!friendDoc.exists()) return [false, "Friend not found"];
+
+      const friendData = friendDoc.data() as { connectionId: string };
+      const connectionId = friendData.connectionId;
+
+      const meetupsCollectionRef = collection(db, "connections", connectionId, "meetups");
+
+      const newMeetup = {
+        timestamp: Date.now(),
+        lat: userLat,
+        lon: userLon,
+      };
+
+      await addDoc(meetupsCollectionRef, newMeetup);
+
       return [true, "Success"];
     } else {
       return [false, "Too far away from friend"];
     }
-  } catch {
+  } catch (err) {
     return [false, "Geolocation permission denied"];
   }
 }

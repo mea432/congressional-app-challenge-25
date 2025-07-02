@@ -90,7 +90,7 @@ export default function TopNavbar() {
               <div className="pointer-events-auto flex space-x-3">
                 <button
                   onClick={() => setActiveOverlay('add-friend')}
-                  className="bg-white shadow-md rounded-full p-2 relative"
+                  className="bg-white shadow-md rounded-full p-2 relative cursor-pointer"
                 >
                   <UserPlus className="w-6 h-6 text-gray-700" />
                   {hasIncomingRequests && (
