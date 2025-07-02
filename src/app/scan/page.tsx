@@ -8,40 +8,42 @@ import PageProtected from '@/components/authentication';
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
 
-function processMeetUp(code: string): [boolean, string] {
+async function processMeetUp(code: string): Promise<[boolean, string]> {
   const [friendId, timestamp, friendLat, friendLon] = code.split(',');
-
-  console.log("friend location:", friendLat, friendLon);
 
   if (Date.now() - parseInt(timestamp) > 10000) {
     return [false, "QR code expired"];
-  } else if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const userLat = pos.coords.latitude;
-        const userLon = pos.coords.longitude;
-        console.log("my location:", userLat, userLon);
-        const distance = Math.sqrt(
-          Math.pow(userLat - parseFloat(friendLat), 2) +
-          Math.pow(userLon - parseFloat(friendLon), 2)
-        );
-        console.log("distance:", distance);
-        if (distance < 0.0009) {
-          console.log("User is within 100m of friend");
-          return [true, "Success"];
-        } else {
-          console.log("User is too far from friend");
-          return [false, "You are too far from your friend to meet up"];
-        }
-      },
-      () => {
-        alert("Geolocation permission denied");
-        return [false, "Geolocation permission denied"];
-      }
-    );
   }
 
-  return [true, "Success"];
+  if (!navigator.geolocation) {
+    return [false, "Geolocation not supported"];
+  }
+
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
+    const userLat = pos.coords.latitude;
+    const userLon = pos.coords.longitude;
+    const distance = Math.sqrt(
+      Math.pow(userLat - parseFloat(friendLat), 2) +
+      Math.pow(userLon - parseFloat(friendLon), 2)
+    );
+
+    if (isNaN(distance)) {
+      return [false, "Invalid QR location data"];
+    }
+
+    if (distance < 0.0009) {
+      console.log("Backend for more processing would be called here");
+      return [true, "Success"];
+    } else {
+      return [false, "Too far away from friend"];
+    }
+  } catch {
+    return [false, "Geolocation permission denied"];
+  }
 }
 
 function QrScannerComponent() {
@@ -53,6 +55,8 @@ function QrScannerComponent() {
   const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<[boolean, string] | null>(null);
   const scannerRef = useRef<QrScanner | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const hasScanned = useRef(false);
+
 
   useEffect(() => {
     const startScanner = async () => {
@@ -65,11 +69,12 @@ function QrScannerComponent() {
           scannerRef.current = new QrScanner(
             videoRef.current,
             (result) => {
-              if (!scannedData) {
+              if (!hasScanned.current) {
+                hasScanned.current = true;
                 setScannedData(result.data);
-                console.log("Scanned data:", result.data);
-                setProcessMeetUpSuccess(processMeetUp(result.data));
-                freezeFrame();
+                processMeetUp(result.data).then(setProcessMeetUpSuccess);
+                scannerRef.current?.stop();
+                streamRef.current?.getTracks().forEach(track => track.stop());
               }
             },
             {
@@ -82,27 +87,6 @@ function QrScannerComponent() {
         }
       } catch (err: any) {
         setError("Camera access denied: " + err.message);
-      }
-    };
-
-    const freezeFrame = () => {
-      scannerRef.current?.stop();
-
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-
-      if (videoRef.current && canvasRef.current) {
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          setFrozen(true);
-        }
       }
     };
 
@@ -142,13 +126,13 @@ function QrScannerComponent() {
           </div>
         )}
 
-        {processMeetUpSuccess && processMeetUpSuccess[0] == true && (
+        {(processMeetUpSuccess && processMeetUpSuccess[0] == true) && (
           <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             🎉 Meetup confirmed! Streak: ___
           </div>
         )}
 
-        {processMeetUpSuccess && processMeetUpSuccess[0] === false && (
+        {(processMeetUpSuccess && processMeetUpSuccess[0] === false) && (
           <div className="bg-yellow-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             ❌ Meetup failed. Please try again. {processMeetUpSuccess[1]}
           </div>
