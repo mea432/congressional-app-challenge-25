@@ -20,7 +20,7 @@ export default function FriendInfo({ friendId, connectionId, streak, meetups, on
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 max-h-screen overflow-y-auto bg-white p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 max-h-screen overflow-y-auto bg-white p-6 pb-32">
       <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 cursor-pointer">✕</button>
       <h2 className="text-xl font-bold mb-2">Friend Info</h2>
       <p><b>Friend ID:</b> {friendId}</p>
