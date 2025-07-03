@@ -39,12 +39,9 @@ export default function ProfileComponent() {
 
   return (
     <MainContent>
-      <h1 className="text-xl font-bold mb-4">Profile</h1>
       {user ? (
         <div className="space-y-2">
-          <div><b>UID:</b> {user.uid}</div>
-          <div><b>Email:</b> {user.email}</div>
-          <div><b>Display Name:</b> {user.displayName}</div>
+          <h1 className="text-lg font-bold">{user.displayName}</h1>
           <div><b>Points:</b> {user.points || 0}</div>
           <div><b>Avatar:</b> 
             <img 
