@@ -131,7 +131,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
             <button
               onClick={upload}
               disabled={uploading}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full cursor-pointer"
             >
               {uploading ? "Uploading..." : "Upload"}
             </button>

@@ -204,7 +204,7 @@ function QrScannerComponent() {
             <br />
             Optional: 
             <button
-              className="mt-2 bg-white text-black px-3 py-1 rounded"
+              className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition"
               onClick={() => setShowSelfieModal(true)}
             >
               Add a Selfie

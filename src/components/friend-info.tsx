@@ -20,53 +20,51 @@ export default function FriendInfo({ friendId, connectionId, streak, meetups, on
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded shadow-lg min-w-[300px] relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 cursor-pointer">✕</button>
-        <h2 className="text-xl font-bold mb-2">Friend Info</h2>
-        <p><b>Friend ID:</b> {friendId}</p>
-        <p><b>Connection ID:</b> {connectionId}</p>
-        {streak !== undefined && (
-          <p><b>Streak:</b> {streak}</p>
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 max-h-screen overflow-y-auto bg-white p-6">
+      <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 cursor-pointer">✕</button>
+      <h2 className="text-xl font-bold mb-2">Friend Info</h2>
+      <p><b>Friend ID:</b> {friendId}</p>
+      <p><b>Connection ID:</b> {connectionId}</p>
+      {streak !== undefined && (
+        <p><b>Streak:</b> {streak}</p>
+      )}
+      {/* Add more friend info here if needed */}
+      <h3 className="text-lg font-semibold mt-4">Meetups</h3>
+      <ul className="space-y-4">
+        {meetups.length === 0 ? (
+          <li className="text-gray-500 italic">No meetups yet.</li>
+        ) : (
+          meetups.map(meetup => (
+            <li
+          key={meetup.id}
+          className="flex items-center bg-gray-50 rounded-lg p-3 shadow-sm"
+            >
+          <img
+            src={meetup.selfie_url}
+            alt="Meetup Selfie"
+            className="w-16 h-16 rounded-lg object-cover mr-4 border border-gray-200"
+          />
+          <div>
+            <p className="font-medium text-gray-800 mb-1">
+              {meetup.caption || <span className="italic text-gray-400">No caption</span>}
+            </p>
+            <p className="text-sm text-gray-500">
+              <span className="font-semibold">Date:</span>{" "}
+              {meetup.timestamp
+                ? new Date(meetup.timestamp).toLocaleString()
+                : <span className="italic text-gray-400">Unknown</span>}
+            </p>
+          </div>
+            </li>
+          ))
         )}
-        {/* Add more friend info here if needed */}
-        <h3 className="text-lg font-semibold mt-4">Meetups</h3>
-        <ul className="space-y-4">
-          {meetups.length === 0 ? (
-            <li className="text-gray-500 italic">No meetups yet.</li>
-          ) : (
-            meetups.map(meetup => (
-              <li
-            key={meetup.id}
-            className="flex items-center bg-gray-50 rounded-lg p-3 shadow-sm"
-              >
-            <img
-              src={meetup.selfie_url}
-              alt="Meetup Selfie"
-              className="w-16 h-16 rounded-lg object-cover mr-4 border border-gray-200"
-            />
-            <div>
-              <p className="font-medium text-gray-800 mb-1">
-                {meetup.caption || <span className="italic text-gray-400">No caption</span>}
-              </p>
-              <p className="text-sm text-gray-500">
-                <span className="font-semibold">Date:</span>{" "}
-                {meetup.timestamp
-                  ? new Date(meetup.timestamp).toLocaleString()
-                  : <span className="italic text-gray-400">Unknown</span>}
-              </p>
-            </div>
-              </li>
-            ))
-          )}
-        </ul>
-        <button
-          onClick={handleRemoveFriend}
-          className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow cursor-pointer"
-        >
-          Remove Friend
-        </button>
-      </div>
+      </ul>
+      <button
+        onClick={handleRemoveFriend}
+        className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow cursor-pointer"
+      >
+        Remove Friend
+      </button>
     </div>
   );
 }
