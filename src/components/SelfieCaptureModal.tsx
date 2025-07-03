@@ -92,7 +92,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
       <div className="bg-white rounded-lg p-4 max-w-sm w-full relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
         >
           ✖
         </button>
@@ -109,7 +109,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
             />
             <button
               onClick={capturePhoto}
-              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
+              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full cursor-pointer"
             >
               Capture
             </button>

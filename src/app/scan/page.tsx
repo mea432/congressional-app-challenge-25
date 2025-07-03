@@ -202,7 +202,7 @@ function QrScannerComponent() {
             🎉 Meetup confirmed! Streak: {processMeetUpSuccess[2]}
             {processMeetUpSuccess[3] ? ' (Streak increased! Maybe add a cool animation or whatnot similar to duolingo)' : ' (Streak not increased)'}
             <br />
-            Optional: add a selfie
+            Optional: 
             <button
               className="mt-2 bg-white text-black px-3 py-1 rounded"
               onClick={() => setShowSelfieModal(true)}
