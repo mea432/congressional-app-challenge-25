@@ -1,5 +1,6 @@
 'use client';
 
+// imgbb api key: e42686b6e29d3a7a92bab30aca542c96
 import { useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 import QRCode from '@/components/qr-code';
@@ -7,12 +8,13 @@ import QRCode from '@/components/qr-code';
 import PageProtected from '@/components/authentication';
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
+import SelfieCaptureModal from '@/components/SelfieCaptureModal';
 
 import { auth, db } from '@/app/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { addDoc, collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 
-async function processMeetUp(code: string): Promise<[boolean, string, number?, boolean?]> {
+async function processMeetUp(code: string): Promise<[boolean, string, number?, boolean?, string?, string?]> {
   const [friendId, timestamp, friendLat, friendLon] = code.split(',');
 
   if (Date.now() - parseInt(timestamp) > 10000) {
@@ -35,11 +37,14 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
       Math.pow(userLon - parseFloat(friendLon), 2)
     );
 
-    if (isNaN(distance)) {
-      return [false, "Invalid QR location data"];
-    }
+    // if (isNaN(distance)) {
+    //   return [false, "Invalid QR location data"];
+    // }
 
-    if (distance < 0.0009) {
+    console.log(`User location: ${userLat}, ${userLon}`);
+    console.log(`Friend location: ${friendLat}, ${friendLon}`);
+
+    if (distance < 0.0009 || friendLat == 'unknown' || friendLon == 'unknown') {
       const userUid = (window as any).__currentUserUid || '';
       const friendDocRef = doc(db, "users", userUid, "friends", friendId);
       const friendDoc = await getDoc(friendDocRef);
@@ -101,9 +106,9 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
         lon: userLon,
       };
 
-      await addDoc(meetupsCollectionRef, newMeetup);
+      const meetUp = await addDoc(meetupsCollectionRef, newMeetup);
 
-      return [true, "Success", streak, streakIncreased];
+      return [true, "Success", streak, streakIncreased, friendData.connectionId, meetUp.id];
     } else {
       return [false, "Too far away from friend"];
     }
@@ -117,12 +122,11 @@ function QrScannerComponent() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [scannedData, setScannedData] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [frozen, setFrozen] = useState(false);
-  const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<[boolean, string, number?, boolean?] | null>(null);
+  const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<[boolean, string, number?, boolean?, string?, string?] | null>(null);
   const scannerRef = useRef<QrScanner | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const hasScanned = useRef(false);
-
+  const [showSelfieModal, setShowSelfieModal] = useState(false);
 
   useEffect(() => {
     const startScanner = async () => {
@@ -138,6 +142,7 @@ function QrScannerComponent() {
               if (!hasScanned.current) {
                 hasScanned.current = true;
                 setScannedData(result.data);
+                console.log("Scanned data:", result.data);
                 processMeetUp(result.data).then(setProcessMeetUpSuccess);
                 scannerRef.current?.stop();
                 streamRef.current?.getTracks().forEach(track => track.stop());
@@ -167,10 +172,10 @@ function QrScannerComponent() {
   }, [scannedData]);
 
   return (
-    <div className="relative w-screen h-[calc(100vh-4rem)] overflow-hidden bg-black">
+    <div className="relative w-screen h-[calc(100vh-4rem)] bg-black">
       <video
         ref={videoRef}
-        className={`absolute top-0 left-0 w-full h-full object-cover ${frozen ? 'hidden' : ''}`}
+        className={`absolute top-0 left-0 w-full h-full object-cover 'hidden'`}
         autoPlay
         muted
         playsInline
@@ -178,7 +183,7 @@ function QrScannerComponent() {
 
       <canvas
         ref={canvasRef}
-        className={`absolute top-0 left-0 w-full h-full object-cover ${frozen ? '' : 'hidden'}`}
+        className={`absolute top-0 left-0 w-full h-full object-cover 'hidden'`}
       />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
@@ -196,6 +201,14 @@ function QrScannerComponent() {
           <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             🎉 Meetup confirmed! Streak: {processMeetUpSuccess[2]}
             {processMeetUpSuccess[3] ? ' (Streak increased! Maybe add a cool animation or whatnot similar to duolingo)' : ' (Streak not increased)'}
+            <br />
+            Optional: add a selfie
+            <button
+              className="mt-2 bg-white text-black px-3 py-1 rounded"
+              onClick={() => setShowSelfieModal(true)}
+            >
+              Add a Selfie
+            </button>
           </div>
         )}
 
@@ -210,6 +223,41 @@ function QrScannerComponent() {
             ⚠️ Error: {error}
           </div>
         )}
+
+
+        {showSelfieModal && (
+          <SelfieCaptureModal
+            onClose={() => setShowSelfieModal(false)}
+            onUpload={(imgUrl, caption) => {
+              console.log("Uploaded selfie URL:", imgUrl);
+              console.log("Caption:", caption);
+              if (!processMeetUpSuccess || !processMeetUpSuccess[4] || !processMeetUpSuccess[5]) {
+                console.error("No connection ID or meetup ID available for selfie upload");
+                return;
+              }
+              // Add selfie_url and caption to the specific meetup document
+              const meetupDocRef = doc(
+              db,
+              "connections",
+              processMeetUpSuccess[4] as string,
+              "meetups",
+              processMeetUpSuccess[5] as string
+              );
+              setDoc(
+              meetupDocRef,
+              {
+                selfie_url: imgUrl,
+                caption,
+              },
+              { merge: true }
+              );
+
+              // refresh the page to reset the scanner
+              window.location.reload();
+            }}
+          />
+        )}
+
       </div>
     </div>
   );
