@@ -209,6 +209,7 @@ function QrScannerComponent() {
             >
               Add a Selfie
             </button>
+            <button className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition ml-2" onClick={() => window.location.reload()}>No</button>
           </div>
         )}
 
@@ -382,7 +383,7 @@ export default function QrScanPage() {
                   onClick={() => setExpanded(false)}
                 >
                   <span className="mb-2 text-white font-semibold">Your QR code</span>
-                  <div className="bg-white p-4 rounded shadow flex flex-col items-center">
+                  <div className="shadow flex flex-col items-center">
                     <QRCode
                       text={qrText || '0'}
                       width={qrSize}

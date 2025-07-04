@@ -14,16 +14,16 @@ function QRCode({ text, width, className }: QRCodeProps) {
     return (
         <div className={className}>
             <Canvas
-                text={text}
-                options={{
-                    errorCorrectionLevel: 'M',
-                    margin: 2,
-                    width: width,
-                    color: {
-                        dark: '#010599FF',
-                        light: '#FFBF60FF',
-                    },
-                }}
+            text={text}
+            options={{
+                errorCorrectionLevel: 'M',
+                margin: 2,
+                width: width,
+                color: {
+                dark: '#2563eb', // tailwind 'text-blue-600'
+                light: '#DBEAFE', // tailwind 'text-blue-200'
+                },
+            }}
             />
         </div>
     );
