@@ -1,5 +1,6 @@
 import { db } from "@/app/firebaseConfig";
 import { deleteDoc, doc } from "firebase/firestore";
+import Image from "next/image";
 
 export default function FriendInfo({ friendId, connectionId, streak, meetups, onClose, currentUserId, onFriendRemoved }: { friendId: string, connectionId: string, streak: number | undefined, meetups: any[], onClose: () => void, currentUserId: string, onFriendRemoved: () => void }) {
   // Remove friend logic
@@ -39,7 +40,7 @@ export default function FriendInfo({ friendId, connectionId, streak, meetups, on
           key={meetup.id}
           className="flex items-center bg-gray-50 rounded-lg p-3 shadow-sm"
             >
-          <img
+          <Image
             src={meetup.selfie_url}
             alt="Meetup Selfie"
             className="w-16 h-16 rounded-lg object-cover mr-4 border border-gray-200"

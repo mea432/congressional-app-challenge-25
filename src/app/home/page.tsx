@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import PageProtected from "@/components/authentication";
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from "@/components/bottom-navbar";
@@ -95,9 +96,11 @@ function FriendsList({ user }: { user: any }) {
               className="flex items-center gap-4 w-full bg-white rounded shadow p-3 hover:bg-gray-50 transition border cursor-pointer"
               onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups })} // Pass meetups to FriendInfo
           >
-            <img
+            <Image
               src={friend.avatar} // Use a default avatar if none exists
               alt="avatar"
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-full border object-cover object-center"
             />
             <span className="text-lg font-medium">{friend.displayName}

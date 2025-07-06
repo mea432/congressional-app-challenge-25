@@ -5,6 +5,7 @@ import { doc, updateDoc, getDoc } from "firebase/firestore";
 
 import MainContent from "@/components/main-content";
 import { Button } from "@/components/ui/button";
+import Image from "next/image"; // Ensure you have next/image installed
 
 import { db } from "@/app/firebaseConfig"; // Ensure you import your Firestore instance
 
@@ -44,7 +45,7 @@ export default function ProfileComponent() {
           <h1 className="text-lg font-bold">{user.displayName}</h1>
           <div><b>Points:</b> {user.points || 0}</div>
           <div><b>Avatar:</b> 
-            <img 
+            <Image 
               src={user.avatar} 
               alt="User Avatar" 
               className="w-24 h-24 rounded-full border mt-2 object-cover object-center"
