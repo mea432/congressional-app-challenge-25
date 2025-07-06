@@ -170,7 +170,9 @@ export default function AddFriendComponent() {
   return (
     <MainContent>
       <h2 className="text-2xl font-bold mb-4">Add a Friend</h2>
-      <button onClick={() => {navigator.share({title: "Add Friend", url: `${window.location.origin}/friend?id=${currentUserId}`})}}>Send friend link</button>
+      <Button onClick={() => {navigator.share({title: "Add Friend", url: `${window.location.origin}/friend?id=${currentUserId}`})}}>Send friend link</Button>
+      <br />
+      <br />
       <div className="flex gap-2 mb-4">
         <Input
           type="email"
