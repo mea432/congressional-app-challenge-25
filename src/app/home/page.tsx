@@ -11,7 +11,7 @@ import FriendInfo from "@/components/friend-info";
 import { time } from "console";
 
 function FriendsList({ user }: { user: any }) {
-  const [friends, setFriends] = useState<any[]>([]);
+  const [friends, setFriends] = useState<any[] | null>(null);
   const [selectedFriend, setSelectedFriend] = useState<{
     meetups: any[]; friendId: string, connectionId: string, streak?: number 
 } | null>(null);
@@ -47,6 +47,7 @@ function FriendsList({ user }: { user: any }) {
         .map(doc => {
           const data = doc.data();
           return {
+            id: doc.id,
             selfie_url: data.selfie_url,
             caption: data.caption,
             timestamp: data.timestamp ? data.timestamp.toMillis ? data.timestamp.toMillis() : data.timestamp : 0,
@@ -79,12 +80,20 @@ function FriendsList({ user }: { user: any }) {
     <div className="w-full">
       <h2 className="text-2xl font-semibold mb-4">Your Friends</h2>
       <div className="space-y-2">
-        {friends.length === 0 && <div className="text-gray-500">No friends yet.</div>}
-        {friends.map(friend => (
-          <button
-            key={friend.friendId}
-            className="flex items-center gap-4 w-full bg-white rounded shadow p-3 hover:bg-gray-50 transition border cursor-pointer"
-            onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups })} // Pass meetups to FriendInfo
+        {friends === null ? (
+          <div className="text-gray-500">
+            Loading...
+          </div>
+        ) : friends.length === 0 ? (
+          <div className="text-gray-500">
+            No friends yet. Add friends to see them here!
+          </div>
+        ) : (
+          friends.map(friend => (
+            <button
+              key={friend.friendId}
+              className="flex items-center gap-4 w-full bg-white rounded shadow p-3 hover:bg-gray-50 transition border cursor-pointer"
+              onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups })} // Pass meetups to FriendInfo
           >
             <img
               src={friend.avatar} // Use a default avatar if none exists
@@ -97,7 +106,7 @@ function FriendsList({ user }: { user: any }) {
               )}
             </span>
           </button>
-        ))}
+        )))}
       </div>
       {selectedFriend && (
         <FriendInfo
