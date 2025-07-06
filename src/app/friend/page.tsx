@@ -52,7 +52,7 @@ export default function AddFriend() {
             {(user) => (
                 <>
                     <p>Your user id: {user.uid}</p>
-                    <Button onClick={() => {sendFriendRequest(friendId, user.uid); window.location.replace("/home")}}>Send friend request</Button>
+                    <Button onClick={async () => { await sendFriendRequest(friendId, user.uid); window.location.replace("/home") }}>Send friend request</Button>
                 </>
             )}
         </PageProtected>

@@ -5,12 +5,13 @@ import MainContent from "@/components/main-content";
 import { Button } from "./ui/button";
 
 import { db } from "@/app/firebaseConfig";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, getDocs, collection, deleteDoc } from "firebase/firestore";
 
 export default function SettingsComponent() {
   const [user, setUser] = useState<any>(null);
   const [editingDisplayName, setEditingDisplayName] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -19,6 +20,70 @@ export default function SettingsComponent() {
     });
     return unsubscribe;
   }, []);
+
+  async function deleteAccount(uid: string) {
+    if (!uid) return;
+    if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      // 1. Get all friends to find all connectionIds
+      const friendsCol = collection(db, `users/${uid}/friends`);
+      const friendsSnap = await getDocs(friendsCol);
+      const connectionIds = friendsSnap.docs.map(docSnap => docSnap.data().connectionId).filter(Boolean);
+      // 2. Delete all connections
+      await Promise.all(connectionIds.map(async (connectionId) => {
+        if (connectionId) {
+          await deleteDoc(doc(db, "connections", connectionId));
+        }
+      }));
+      // 3. Delete all documents in user's /friends subcollection
+      await Promise.all(friendsSnap.docs.map(async (docSnap) => {
+        await deleteDoc(doc(db, `users/${uid}/friends`, docSnap.id));
+        const friendId = docSnap.data().friendId;
+        if (friendId) {
+          await deleteDoc(doc(db, `users/${friendId}/friends`, uid));
+        }
+      }));
+      // 4. Delete all documents in user's /inFriendRequests subcollection
+      const inReqCol = collection(db, `users/${uid}/inFriendRequests`);
+      const inReqSnap = await getDocs(inReqCol);
+      await Promise.all(inReqSnap.docs.map(async (docSnap) => {
+        await deleteDoc(doc(db, `users/${uid}/inFriendRequests`, docSnap.id));
+      }));
+      // 5. Delete all documents in user's /outFriendRequests subcollection
+      const outReqCol = collection(db, `users/${uid}/outFriendRequests`);
+      const outReqSnap = await getDocs(outReqCol);
+      await Promise.all(outReqSnap.docs.map(async (docSnap) => {
+        await deleteDoc(doc(db, `users/${uid}/outFriendRequests`, docSnap.id));
+      }));
+      // 6. Delete the user document itself
+      await deleteDoc(doc(db, "users", uid));
+      // 7. Delete the user from Firebase Authentication
+      if (auth.currentUser) {
+        try {
+          await auth.currentUser.delete();
+        } catch (authError) {
+          // If re-authentication is required, sign out and inform the user
+          // Type-narrowing for FirebaseError
+          const errorCode = (authError && typeof authError === 'object' && 'code' in authError) ? (authError as any).code : undefined;
+          if (errorCode === 'auth/requires-recent-login') {
+            alert("For security, please sign in again to delete your account.");
+            await signOut(auth);
+            return;
+          } else {
+            throw authError;
+          }
+        }
+      }
+      alert("Your account and all related data have been permanently deleted.");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert("There was an error deleting your account. Please try again later.");
+    } finally {
+      setDeleting(false);
+      signOut(auth);
+    }
+  }
 
   return (
     <MainContent>
@@ -89,7 +154,10 @@ export default function SettingsComponent() {
             )}
             </div>
           <Button onClick={() => signOut(auth)} className="text-sm cursor-pointer">Sign Out</Button>
-          {/* Add more fields if needed */}
+          <br />
+          <Button onClick={() => deleteAccount(user.uid)} disabled={deleting}>
+            {deleting ? "Deleting..." : "Delete Account"}
+          </Button>
         </div>
       ) : (
         <div>Loading settings...</div>
