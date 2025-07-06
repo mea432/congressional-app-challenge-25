@@ -170,6 +170,7 @@ export default function AddFriendComponent() {
   return (
     <MainContent>
       <h2 className="text-2xl font-bold mb-4">Add a Friend</h2>
+      <button onClick={() => {navigator.share({title: "Add Friend", url: `${window.location.origin}/friend?id=${currentUserId}`})}}>Send friend link</button>
       <div className="flex gap-2 mb-4">
         <Input
           type="email"
@@ -184,6 +185,7 @@ export default function AddFriendComponent() {
         />
         <Button onClick={handleSearch} className="cursor-pointer">Search</Button>
       </div>
+
 
       <div className="space-y-2 mb-8">
         {hasSearched && results.length === 0 ? (
