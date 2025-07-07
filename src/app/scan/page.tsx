@@ -277,34 +277,47 @@ export default function QrScanPage() {
 
   // Function to check permissions
   const checkPermissions = async () => {
-    if (!firstPermissionCheck) {
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-      } catch {}
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          () => {},
-          () => {},
-          { timeout: 1000 }
-        );
+    // iOS Safari does not support Permissions API for camera, so we check by trying to access the devices directly
+    let cameraStatus: 'granted' | 'denied' | 'prompt' | 'unknown' = 'unknown';
+    let geoStatus: 'granted' | 'denied' | 'prompt' | 'unknown' = 'unknown';
+
+    // Check camera permission by attempting to access the camera
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      cameraStatus = 'granted';
+    } catch (err: any) {
+      if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+        cameraStatus = 'denied';
+      } else {
+        cameraStatus = 'prompt';
       }
     }
-    if (typeof navigator === 'undefined' || !navigator.permissions) {
-      setCameraPermission('unknown');
-      setGeoPermission('unknown');
-      return;
+
+    // Check geolocation permission by attempting to access geolocation
+    if (navigator.geolocation) {
+      await new Promise<void>((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          () => {
+            geoStatus = 'granted';
+            resolve();
+          },
+          (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+              geoStatus = 'denied';
+            } else {
+              geoStatus = 'prompt';
+            }
+            resolve();
+          },
+          { timeout: 1000 }
+        );
+      });
+    } else {
+      geoStatus = 'unknown';
     }
-    try {
-      const [camera, geo] = await Promise.all([
-        navigator.permissions.query({ name: 'camera' as PermissionName }),
-        navigator.permissions.query({ name: 'geolocation' as PermissionName }),
-      ]);
-      setCameraPermission(camera.state);
-      setGeoPermission(geo.state);
-    } catch {
-      setCameraPermission('unknown');
-      setGeoPermission('unknown');
-    }
+
+    setCameraPermission(cameraStatus);
+    setGeoPermission(geoStatus);
   };
 
   // Only check permissions after mount and when user clicks Next
