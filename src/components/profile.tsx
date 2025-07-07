@@ -47,7 +47,9 @@ export default function ProfileComponent() {
           <div><b>Avatar:</b> 
             <Image 
               src={user.avatar} 
-              alt="User Avatar" 
+              alt="User Avatar"
+              width={64}
+              height={64}
               className="w-24 h-24 rounded-full border mt-2 object-cover object-center"
             />
             <Button onClick={async () => {

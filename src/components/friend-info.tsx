@@ -59,18 +59,20 @@ export default function FriendInfo({
   };
 
   const handleRemoveFriend = async () => {
-    if (!currentUserId || !friendId || !connectionId) return;
-    try {
-      await deleteDoc(doc(db, "connections", connectionId));
-      await deleteDoc(doc(db, `users/${currentUserId}/friends`, friendId));
-      await deleteDoc(doc(db, `users/${friendId}/friends`, currentUserId));
-      onClose();
-      onFriendRemoved();
-    } catch (err) {
-      alert("Failed to remove friend.");
-      console.error(err);
+    if (confirm("Are you sure? Removing a friend is permanent and deletes all data from the friendship.")) {
+      if (!currentUserId || !friendId || !connectionId) return;
+        try {
+          await deleteDoc(doc(db, "connections", connectionId));
+          await deleteDoc(doc(db, `users/${currentUserId}/friends`, friendId));
+          await deleteDoc(doc(db, `users/${friendId}/friends`, currentUserId));
+          onClose();
+          onFriendRemoved();
+        } catch (err) {
+          alert("Failed to remove friend.");
+          console.error(err);
+        }
+      };
     }
-  };
 
   return (
     <div className="fixed inset-0 z-50 max-w-screen overflow-y-auto">
