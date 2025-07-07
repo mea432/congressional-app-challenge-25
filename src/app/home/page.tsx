@@ -14,8 +14,8 @@ import { time } from "console";
 function FriendsList({ user }: { user: any }) {
   const [friends, setFriends] = useState<any[] | null>(null);
   const [selectedFriend, setSelectedFriend] = useState<{
-    meetups: any[]; friendId: string, connectionId: string, streak?: number 
-} | null>(null);
+    meetups: any[]; friendId: string, connectionId: string, streak?: number, friendUsername: string, friendProfilePicUrl: string
+  } | null>(null);
 
   const fetchFriends = async () => {
     const friendsCol = collection(db, `users/${user.uid}/friends`);
@@ -94,7 +94,7 @@ function FriendsList({ user }: { user: any }) {
             <button
               key={friend.friendId}
               className="flex items-center gap-4 w-full bg-white rounded shadow p-3 hover:bg-gray-50 transition border cursor-pointer"
-              onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups })} // Pass meetups to FriendInfo
+              onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups, friendUsername: friend.displayName, friendProfilePicUrl: friend.avatar })} // Pass meetups to FriendInfo
           >
             <Image
               src={friend.avatar} // Use a default avatar if none exists
@@ -118,6 +118,8 @@ function FriendsList({ user }: { user: any }) {
           currentUserId={user.uid}
           streak={selectedFriend.streak}
           meetups={selectedFriend.meetups}
+          friendUsername={selectedFriend.friendUsername}
+          friendProfilePicUrl={selectedFriend.friendProfilePicUrl}
           onClose={() => setSelectedFriend(null)}
           onFriendRemoved={fetchFriends}
         />

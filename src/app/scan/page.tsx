@@ -268,12 +268,14 @@ export default function QrScanPage() {
   // Track individual permission states
   const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [geoPermission, setGeoPermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
-  // Show popup if either permission is not granted
-  const showPermissionPopup = cameraPermission !== 'granted' || geoPermission !== 'granted';
   const [expanded, setExpanded] = useState(false);
   const [qrSize, setQrSize] = useState<number | null>(null);
   const [qrText, setQrText] = useState<string>('0');
+  const [permissionsChecked, setPermissionsChecked] = useState(false);
   const [firstPermissionCheck, setFirstPermissionCheck] = useState(true);
+  const showPermissionPopup =
+  permissionsChecked &&
+  (cameraPermission !== 'granted' || geoPermission !== 'granted');
 
   // Function to check permissions
   const checkPermissions = async () => {
@@ -318,6 +320,7 @@ export default function QrScanPage() {
 
     setCameraPermission(cameraStatus);
     setGeoPermission(geoStatus);
+    setPermissionsChecked(true);
   };
 
   // Only check permissions after mount and when user clicks Next
