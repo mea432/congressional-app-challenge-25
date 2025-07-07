@@ -10,8 +10,7 @@ import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from '@/components/bottom-navbar';
 import SelfieCaptureModal from '@/components/SelfieCaptureModal';
 
-import { auth, db } from '@/app/firebaseConfig';
-import { onAuthStateChanged } from 'firebase/auth';
+import { db } from '@/app/firebaseConfig';
 import { addDoc, collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import Link from 'next/dist/client/link';
 
@@ -273,7 +272,7 @@ export default function QrScanPage() {
   const showPermissionPopup = cameraPermission !== 'granted' || geoPermission !== 'granted';
   const [expanded, setExpanded] = useState(false);
   const [qrSize, setQrSize] = useState<number | null>(null);
-  const [qrText, setQrText] = useState<string>('');
+  const [qrText, setQrText] = useState<string>('0');
   const [firstPermissionCheck, setFirstPermissionCheck] = useState(true);
 
   // Function to check permissions
@@ -348,7 +347,7 @@ export default function QrScanPage() {
 
   // Only run QR code geolocation effect after permissions popup is dismissed
   useEffect(() => {
-    if (firstPermissionCheck || showPermissionPopup) return;
+    if (showPermissionPopup) return;
     let interval: NodeJS.Timeout;
     let isMounted = true;
     const updateQrText = async () => {
