@@ -13,6 +13,7 @@ import SelfieCaptureModal from '@/components/SelfieCaptureModal';
 import { db } from '@/app/firebaseConfig';
 import { addDoc, collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import Link from 'next/dist/client/link';
+import { Button } from '@/components/ui/button';
 
 async function processMeetUp(code: string): Promise<[boolean, string, number?, boolean?, string?, string?]> {
   const [friendId, timestamp, friendLat, friendLon] = code.split(',');
@@ -216,12 +217,16 @@ function QrScannerComponent() {
         {(processMeetUpSuccess && processMeetUpSuccess[0] === false) && (
           <div className="bg-yellow-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             ❌ Meetup failed. Please try again. {processMeetUpSuccess[1]}
+            <br />
+            <Button onClick={() => { window.location.reload()}}>Try again</Button>
           </div>
         )}
 
         {error && (
           <div className="bg-red-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             ⚠️ Error: {error}
+            <br />
+            <Button onClick={() => { window.location.reload()}}>Try again</Button>
           </div>
         )}
 

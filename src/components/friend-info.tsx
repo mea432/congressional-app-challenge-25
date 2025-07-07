@@ -73,9 +73,15 @@ export default function FriendInfo({
   };
 
   return (
-      <div className="fixed inset-0 z-50 max-w-screen overflow-y-auto">
-    <MainContent>
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 cursor-pointer">✕</button>
+    <div className="fixed inset-0 z-50 max-w-screen overflow-y-auto">
+      <MainContent>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 cursor-pointer bg-white bg-opacity-80 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg hover:bg-opacity-100 transition"
+          aria-label="Close"
+        >
+          ✕
+        </button>
 
         {/* Profile Picture and Username */}
         <div className="flex flex-col items-center mb-4">
@@ -150,7 +156,7 @@ export default function FriendInfo({
             />
           </div>
         )}
-    </MainContent>
-      </div>
+      </MainContent>
+    </div>
   );
 }
