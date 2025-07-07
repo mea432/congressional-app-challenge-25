@@ -412,7 +412,7 @@ export default function QrScanPage() {
                       <span>Location Permission</span>
                     </li>
                   </ul>
-                  {firstPermissionCheck ? (<p className='text-gray-700 text-center mb-4'>Please grant the required permissions in the following popups to continue.</p>) : (<Link href="https://www.computerhope.com/issues/ch002358.htm" className='text-blue-600 hover:underline mb-4'>How to enable permissions manually</Link>)}
+                  {firstPermissionCheck ? (<p className='text-gray-700 text-center mb-4'>Please grant the required permissions in the following popups to continue.</p>) : (<Link href="https://www.computerhope.com/issues/ch002358.htm" target="_blank" className='text-blue-600 hover:underline mb-4'>How to enable permissions manually</Link>)}
                   <button
                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded transition cursor-pointer"
                     onClick={() => { setFirstPermissionCheck(false); checkPermissions(); }}
