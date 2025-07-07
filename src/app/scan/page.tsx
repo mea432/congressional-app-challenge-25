@@ -274,9 +274,22 @@ export default function QrScanPage() {
   const [expanded, setExpanded] = useState(false);
   const [qrSize, setQrSize] = useState<number | null>(null);
   const [qrText, setQrText] = useState<string>('');
+  const [firstPermissionCheck, setFirstPermissionCheck] = useState(true);
 
   // Function to check permissions
   const checkPermissions = async () => {
+    if (!firstPermissionCheck) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+      } catch {}
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          () => {},
+          () => {},
+          { timeout: 1000 }
+        );
+      }
+    }
     if (typeof navigator === 'undefined' || !navigator.permissions) {
       setCameraPermission('unknown');
       setGeoPermission('unknown');
@@ -316,6 +329,14 @@ export default function QrScanPage() {
     };
   }, []);
 
+  // When firstPermissionCheck changes to false, re-check permissions
+  useEffect(() => {
+    if (!firstPermissionCheck) {
+      checkPermissions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstPermissionCheck]);
+
   useEffect(() => {
     const updateSize = () => {
       setQrSize(Math.min(window.innerWidth * 0.75, window.innerHeight * 0.75));
@@ -327,7 +348,7 @@ export default function QrScanPage() {
 
   // Only run QR code geolocation effect after permissions popup is dismissed
   useEffect(() => {
-    if (showPermissionPopup) return;
+    if (firstPermissionCheck || showPermissionPopup) return;
     let interval: NodeJS.Timeout;
     let isMounted = true;
     const updateQrText = async () => {
@@ -368,7 +389,7 @@ export default function QrScanPage() {
           <>
             <TopNavbar />
             {showPermissionPopup && (
-              <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90">
+              <div className="fixed inset-0 z-49 flex flex-col items-center justify-center bg-black bg-opacity-90">
                 <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full flex flex-col items-center">
                   <h2 className="text-xl font-bold mb-4 text-center">Permissions Required</h2>
                   <p className="mb-4 text-gray-700 text-center">
@@ -392,12 +413,12 @@ export default function QrScanPage() {
                       <span>Location Permission</span>
                     </li>
                   </ul>
-                  <Link href="https://www.computerhope.com/issues/ch002358.htm" className='text-blue-600 hover:underline mb-4'>How to enable permissions</Link>
+                  {firstPermissionCheck ? (<p className='text-gray-700 text-center mb-4'>Please grant the required permissions in the following popups to continue.</p>) : (<Link href="https://www.computerhope.com/issues/ch002358.htm" className='text-blue-600 hover:underline mb-4'>How to enable permissions manually</Link>)}
                   <button
                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded transition cursor-pointer"
-                    onClick={checkPermissions}
+                    onClick={() => { setFirstPermissionCheck(false); checkPermissions(); }}
                   >
-                    Check again
+                    {firstPermissionCheck ? 'Ok' : 'Check again'}
                   </button>
                 </div>
               </div>
