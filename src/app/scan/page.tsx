@@ -88,13 +88,41 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
               streak = data.streak + 1;
               streakIncreased = true;
 
-              // Update points for both users
-              const userRef = doc(db, "users", userUid);
-              const friendRef = doc(db, "users", friendId);
+              // Update points for both users robustly
+              try {
+                // User points update
+                const userRef = doc(db, "users", userUid);
+                const friendRef = doc(db, "users", friendId);
 
-              await setDoc(userRef, { points: (friendDoc.data()?.points || 0) + 1 }, { merge: true });
-              const friendSnap = await getDoc(friendRef);
-              await setDoc(friendRef, { points: (friendSnap.data()?.points || 0) + 1 }, { merge: true });
+                console.log("[Meetup] userUid:", userUid, "userRef.path:", userRef.path);
+                console.log("[Meetup] friendId:", friendId, "friendRef.path:", friendRef.path);
+
+                // Get user points (handle missing doc/field)
+                let userPoints = 0;
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                  const data = userSnap.data();
+                  userPoints = typeof data.points === "number" ? data.points : 0;
+                } else {
+                  console.log("[Meetup] User document does not exist, will create with points=1");
+                }
+                await setDoc(userRef, { points: userPoints + 1 }, { merge: true });
+                console.log("[Meetup] Updated user points to", userPoints + 1);
+
+                // Get friend points (handle missing doc/field)
+                let friendPoints = 0;
+                const friendSnap = await getDoc(friendRef);
+                if (friendSnap.exists()) {
+                  const data = friendSnap.data();
+                  friendPoints = typeof data.points === "number" ? data.points : 0;
+                } else {
+                  console.log("[Meetup] Friend document does not exist, will create with points=1");
+                }
+                await setDoc(friendRef, { points: friendPoints + 1 }, { merge: true });
+                console.log("[Meetup] Updated friend points to", friendPoints + 1);
+              } catch (err) {
+                console.error("[Meetup] Error updating points:", err);
+              }
             }
           }
           await setDoc(connectionRef, { streak, streak_expire: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2) }, { merge: true });
@@ -448,7 +476,7 @@ export default function QrScanPage() {
               {!showPermissionPopup && <QrScannerComponent />}
               {expanded && qrSize !== null ? (
                 <div
-                  className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-80 cursor-pointer"
+                  className="fixed inset-0 z-25 flex flex-col items-center justify-center bg-black bg-opacity-80 cursor-pointer"
                   onClick={() => setExpanded(false)}
                 >
                   <span className="mb-2 text-white font-semibold">Your QR code</span>
