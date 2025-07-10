@@ -112,7 +112,7 @@ export default function FriendInfo({
             meetups.map(meetup => (
               <li key={meetup.id} className="flex items-center bg-gray-50 rounded-lg p-3 shadow-sm">
                 <Image
-                  src={meetup.selfie_url || "/default-avatar.png"}
+                  src={meetup.selfie_url || "https://images.ctfassets.net/nnkxuzam4k38/49gp8M7icXzzcVLEld8xzL/6467d14e5d6769dedc8e8fd63f437e97/pure-white-background.jpg"}
                   alt="Meetup Selfie"
                   width={64}
                   height={64}
@@ -121,7 +121,7 @@ export default function FriendInfo({
                 />
                 <div>
                   <p className="font-medium text-gray-800 mb-1">
-                    {meetup.caption || <span className="italic text-gray-400">No caption</span>}
+                    {meetup.caption || <span className="italic text-gray-400">No selfie taken</span>}
                   </p>
                   <p className="text-sm text-gray-500">
                     <span className="font-semibold">Date:</span>{" "}
