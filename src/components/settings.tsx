@@ -3,6 +3,7 @@ import { auth } from "@/app/firebaseConfig";
 import { onAuthStateChanged, signOut, updateProfile, User } from "firebase/auth";
 import MainContent from "@/components/main-content";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 import { db } from "@/app/firebaseConfig";
 import { doc, updateDoc, getDocs, collection, deleteDoc } from "firebase/firestore";
@@ -153,7 +154,13 @@ export default function SettingsComponent() {
               </>
             )}
             </div>
+            <Link href="/tutorial" >Go to tutorial</Link>
+
+            <br />
+            <br />
             <Button>Change Password</Button>
+
+
           <br />
 
           <Button onClick={() => signOut(auth)} className="text-sm cursor-pointer">Sign Out</Button>
