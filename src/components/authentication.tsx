@@ -102,6 +102,15 @@ export function SignInForm({
   )
 }
 
+
+
+
+
+
+
+
+
+
 export function SignUpForm({
   className,
   ...props
@@ -141,7 +150,7 @@ export function SignUpForm({
       });
 
       console.log("User registered:", userCredential.user);
-      router.push("/home");
+      router.push("/tutorial");
     } catch (error) {
       alert("Sign-up error: " + (error as any).message);
     }
