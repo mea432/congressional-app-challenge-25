@@ -229,17 +229,26 @@ function QrScannerComponent() {
 
         {(processMeetUpSuccess && processMeetUpSuccess[0] == true) && (
           <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
-            🎉 Meetup confirmed! Streak: {processMeetUpSuccess[2]}
-            {processMeetUpSuccess[3] ? ' (Streak increased! Maybe add a cool animation or whatnot similar to duolingo)' : ' (Streak not increased)'}
+            🎉 Meetup confirmed!
             <br />
-            Optional: 
-            <button
-              className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition"
-              onClick={() => setShowSelfieModal(true)}
-            >
-              Add a Selfie
-            </button>
-            <button className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition ml-2" onClick={() => setShowStreak(true)}>No</button>
+            {(!showStreak) ? (
+              <>
+                <p>Optional: </p>
+                <button
+                className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition"
+                onClick={() => setShowSelfieModal(true)}
+                >
+                  Add a Selfie
+                </button>
+                <button className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition ml-2" onClick={() => setShowStreak(true)}>No</button>
+              </>
+            ) : (
+              <>
+                Streak: {processMeetUpSuccess[2]}
+                {processMeetUpSuccess[3] ? ' (Streak increased! Maybe add a cool animation or whatnot similar to duolingo)' : ' (Streak not increased)'}
+              </>
+            )}
+
           </div>
         )}
 
@@ -287,8 +296,7 @@ function QrScannerComponent() {
               { merge: true }
               );
 
-              // refresh the page to reset the scanner
-              window.location.reload();
+              setShowStreak(true)
             }}
           />
         )}
