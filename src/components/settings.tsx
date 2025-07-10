@@ -153,6 +153,9 @@ export default function SettingsComponent() {
               </>
             )}
             </div>
+            <Button>Change Password</Button>
+          <br />
+
           <Button onClick={() => signOut(auth)} className="text-sm cursor-pointer">Sign Out</Button>
           <br />
           <Button onClick={() => deleteAccount(user.uid)} disabled={deleting}>
