@@ -156,6 +156,7 @@ function QrScannerComponent() {
   const streamRef = useRef<MediaStream | null>(null);
   const hasScanned = useRef(false);
   const [showSelfieModal, setShowSelfieModal] = useState(false);
+  const [showStreak, setShowStreak] = useState(false)
 
   useEffect(() => {
     const startScanner = async () => {
@@ -238,7 +239,7 @@ function QrScannerComponent() {
             >
               Add a Selfie
             </button>
-            <button className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition ml-2" onClick={() => window.location.reload()}>No</button>
+            <button className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition ml-2" onClick={() => setShowStreak(true)}>No</button>
           </div>
         )}
 
