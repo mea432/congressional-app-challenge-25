@@ -22,7 +22,7 @@ export default function Leaderboard() {
   const [users, setUsers] = useState<UserData[]>([]);
 
   useEffect(() => {
-    const fetchTopUsers = async () => {
+    const fetchTopPointsUsers = async () => {
       const q = query(
         collection(db, "users"),
         orderBy("points", "desc"),
@@ -44,7 +44,33 @@ export default function Leaderboard() {
       setUsers(usersData);
     };
 
-    fetchTopUsers();
+    fetchTopPointsUsers();
+  }, []);
+
+    useEffect(() => {
+    const fetchTopStreakUsers = async () => {
+      const q = query(
+        collection(db, "users"),
+        orderBy("points", "desc"),
+        limit(10)
+      );
+      const querySnapshot = await getDocs(q);
+      const usersData: UserData[] = [];
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        usersData.push({
+          id: docSnap.id,
+          displayName: data.displayName || "Unnamed",
+          points: data.points || 0,
+          avatar: data.avatar,
+        });
+      });
+
+      setUsers(usersData);
+    };
+
+    fetchTopStreakUsers();
   }, []);
 
   return (
@@ -101,6 +127,7 @@ export default function Leaderboard() {
           </>
         );
       }}
+
     </PageProtected>
   );
 }
