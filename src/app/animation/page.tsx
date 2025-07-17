@@ -1,4 +1,6 @@
 'use client';
+// TODO: implement entire thing
+
 
 import 'nextjs-animated-counter/dist/esm/styles.css';
 
@@ -9,13 +11,13 @@ import { Button } from '@/components/ui/button';
 const App = () => {
   const [counterValue, setCounterValue] = useState(500);
 
-interface HandleCounterUpdate {
+  interface HandleCounterUpdate {
     (increment: boolean): void;
-}
+  }
 
-const handleCounterUpdate: HandleCounterUpdate = (increment) => {
+  const handleCounterUpdate: HandleCounterUpdate = (increment) => {
     setCounterValue(increment ? counterValue + 1 : counterValue - 1);
-};
+  };
 
   return (
     <div>
