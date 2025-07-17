@@ -201,6 +201,17 @@ function QrScannerComponent() {
     };
   }, [scannedData]);
 
+
+  const [counterValue, setCounterValue] = useState(500);
+
+  interface HandleCounterUpdate {
+    (increment: boolean): void;
+  }
+
+  const handleCounterUpdate: HandleCounterUpdate = (increment) => {
+    setCounterValue(increment ? counterValue + 1 : counterValue - 1);
+  };
+
   return (
     <div className="relative w-screen h-[calc(100vh-4rem)] bg-black">
       <video
@@ -235,8 +246,8 @@ function QrScannerComponent() {
               <>
                 <p>Optional: </p>
                 <button
-                className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition"
-                onClick={() => setShowSelfieModal(true)}
+                  className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition"
+                  onClick={() => setShowSelfieModal(true)}
                 >
                   Add a Selfie
                 </button>
@@ -245,7 +256,8 @@ function QrScannerComponent() {
             ) : (
               <>
                 Streak: {processMeetUpSuccess[2]}
-                {processMeetUpSuccess[3] ? ' (Streak increased! Maybe add a cool animation or whatnot similar to duolingo)' : ' (Streak not increased)'}
+                <br />
+                {processMeetUpSuccess[3] ? ' Streak increased' : ' Streak not increased'}
               </>
             )}
 
@@ -256,7 +268,7 @@ function QrScannerComponent() {
           <div className="bg-yellow-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             ❌ Meetup failed. Please try again. {processMeetUpSuccess[1]}
             <br />
-            <Button onClick={() => { window.location.reload()}}>Try again</Button>
+            <Button onClick={() => { window.location.reload() }}>Try again</Button>
           </div>
         )}
 
@@ -264,7 +276,7 @@ function QrScannerComponent() {
           <div className="bg-red-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
             ⚠️ Error: {error}
             <br />
-            <Button onClick={() => { window.location.reload()}}>Try again</Button>
+            <Button onClick={() => { window.location.reload() }}>Try again</Button>
           </div>
         )}
 
@@ -281,19 +293,19 @@ function QrScannerComponent() {
               }
               // Add selfie_url and caption to the specific meetup document
               const meetupDocRef = doc(
-              db,
-              "connections",
-              processMeetUpSuccess[4] as string,
-              "meetups",
-              processMeetUpSuccess[5] as string
+                db,
+                "connections",
+                processMeetUpSuccess[4] as string,
+                "meetups",
+                processMeetUpSuccess[5] as string
               );
               setDoc(
-              meetupDocRef,
-              {
-                selfie_url: imgUrl,
-                caption,
-              },
-              { merge: true }
+                meetupDocRef,
+                {
+                  selfie_url: imgUrl,
+                  caption,
+                },
+                { merge: true }
               );
 
               setShowStreak(true)
@@ -316,8 +328,8 @@ export default function QrScanPage() {
   const [permissionsChecked, setPermissionsChecked] = useState(false);
   const [firstPermissionCheck, setFirstPermissionCheck] = useState(true);
   const showPermissionPopup =
-  permissionsChecked &&
-  (cameraPermission !== 'granted' || geoPermission !== 'granted');
+    permissionsChecked &&
+    (cameraPermission !== 'granted' || geoPermission !== 'granted');
 
   // Function to check permissions
   const checkPermissions = async () => {
