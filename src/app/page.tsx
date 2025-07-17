@@ -35,6 +35,11 @@ export default function LandingPage() {
           >
             Sign Up
           </Link>
+
+          <Link href="/about"
+            className="px-6 py-3 rounded-md border-2 border-blue-600 text-blue-600">
+            About the creators
+          </Link>
         </div>
       </div>
     </main>
