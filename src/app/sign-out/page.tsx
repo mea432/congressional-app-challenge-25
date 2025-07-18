@@ -5,18 +5,20 @@ import { auth } from "@/app/firebaseConfig";
 import { useEffect } from 'react';
 
 const SignOutPage = () => {
-    const router = useRouter();
+  const router = useRouter();
 
-    useEffect(() => {
-        const signOutUser = async () => {
-            await auth.signOut();
-            router.push('/');
-        };
+  useEffect(() => {
+    const signOutUser = async () => {
+      await auth.signOut();
+      router.push('/');
+    };
 
-        signOutUser();
-    }, [router]);
+    signOutUser();
+  }, [router]);
 
-    return null;
+  return (
+    <p>Signing out...</p>
+  );
 };
 
 export default SignOutPage;
