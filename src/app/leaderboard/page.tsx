@@ -62,7 +62,7 @@ export default function Leaderboard() {
     fetchTopPointsUsers();
   }, []);
 
-  const [topStreaks, setTopStreaks] = useState<StreakEntry[]>([]);
+  const [topStreaks, setTopStreaks] = useState<StreakEntry[] | null>(null);
 
   useEffect(() => {
     const fetchTopStreakUsers = async () => {
@@ -178,15 +178,17 @@ export default function Leaderboard() {
                   })}
                 </ol>
               </div>
+              <br />
               <div>
-                <h2>Top 10 Streaks</h2> {/* TODO: Make this look better and highlight the entry if you are on the leaderboard */}
+                <p className="mb-4 text-gray-600">Top 10 Streaks</p> {/* TODO: Make this look better and highlight the entry if you are on the leaderboard */}
                 <ul>
-                  {topStreaks.length === 0 ? ("Loading...") : (<></>)}
-                  {topStreaks.map(({ userA, userB, streak }, index) => (
-                    <li key={index}>
-                      {userA.displayName} 🔥 {streak} 🔥 {userB.displayName}
-                    </li>
-                  ))}
+                  {topStreaks === null ? ("Loading...") : (
+                    topStreaks.map(({ userA, userB, streak }, index) => (
+                      <li key={index}>
+                        {userA.displayName} 🔥 {streak} 🔥 {userB.displayName}
+                      </li>
+                    ))
+                  )}
                 </ul>
               </div>
             </MainContent>
