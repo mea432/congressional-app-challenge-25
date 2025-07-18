@@ -15,6 +15,7 @@ import { addDoc, collection, doc, getDoc, getDocs, setDoc } from 'firebase/fires
 import Link from 'next/dist/client/link';
 import { Button } from '@/components/ui/button';
 import StreakAnimation from '@/components/streak-animation';
+import Image from 'next/image';
 
 async function processMeetUp(code: string): Promise<[boolean, string, number?, boolean?, string?, string?]> {
   const [friendId, timestamp, friendLat, friendLon] = code.split(',');
@@ -245,8 +246,11 @@ function QrScannerComponent() {
               </>
             ) : (
               <>
-                Streak: <StreakAnimation streak={((processMeetUpSuccess[2] ?? 0) - 1)}></StreakAnimation> <br />
-                {processMeetUpSuccess[3] ? ' Streak increased' : ' Streak not increased'}
+                Streak: <br />
+                {processMeetUpSuccess[3] ? (<StreakAnimation streak={((processMeetUpSuccess[2] ?? 0) - 1)}></StreakAnimation>) : (<p>{processMeetUpSuccess[2]} (Streak not increased)</p>)}
+                <Image src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyM2JpaHBvdnJoaXZkMGJsMWZrb2N5a3p2eXptdHF5N252a2FjNnR6ZiZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9ZQ/J2awouDsf23R2vo2p5/source.gif" width={24} height={24} alt='GIF of flame' />
+                <Button onClick={() => window.location.reload()}>OK</Button>
+                {/* TODO: add sharing streaks (need to generate like an image of the streak like duolingo) */}
               </>
             )}
 
