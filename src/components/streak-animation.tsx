@@ -1,6 +1,4 @@
 'use client';
-// TODO: implement entire thing
-
 
 import 'nextjs-animated-counter/dist/esm/styles.css';
 
@@ -24,13 +22,13 @@ function StreakAnimation({ streak }: StreakAnimationProps) {
   };
 
   useEffect(() => {
-    setTimeout(() => { handleCounterUpdate(true) }, 1000)
+    setTimeout(() => { handleCounterUpdate(true) }, 750)
   }, [])
 
 
   return (
     <div>
-      <AnimatedCounter value={counterValue} color="black" fontSize="40px" includeDecimals={false} />
+      <AnimatedCounter value={counterValue} color="white" incrementColor="#FFA500" decrementColor="#FFA500" fontSize="40px" includeDecimals={false} />
     </div>
   );
 };
