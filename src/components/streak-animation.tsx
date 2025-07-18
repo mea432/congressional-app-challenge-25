@@ -8,8 +8,12 @@ import React, { useState } from 'react';
 import { AnimatedCounter } from 'nextjs-animated-counter';
 import { useEffect } from 'react';
 
-const App = () => {
-  const [counterValue, setCounterValue] = useState(500);
+type StreakAnimationProps = {
+  streak: number;
+}
+
+function StreakAnimation({ streak }: StreakAnimationProps) {
+  const [counterValue, setCounterValue] = useState(streak);
 
   interface HandleCounterUpdate {
     (increment: boolean): void;
@@ -31,4 +35,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default StreakAnimation;

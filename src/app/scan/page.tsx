@@ -14,6 +14,7 @@ import { db } from '@/app/firebaseConfig';
 import { addDoc, collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import Link from 'next/dist/client/link';
 import { Button } from '@/components/ui/button';
+import StreakAnimation from '@/components/streak-animation';
 
 async function processMeetUp(code: string): Promise<[boolean, string, number?, boolean?, string?, string?]> {
   const [friendId, timestamp, friendLat, friendLon] = code.split(',');
@@ -201,17 +202,6 @@ function QrScannerComponent() {
     };
   }, [scannedData]);
 
-
-  const [counterValue, setCounterValue] = useState(500);
-
-  interface HandleCounterUpdate {
-    (increment: boolean): void;
-  }
-
-  const handleCounterUpdate: HandleCounterUpdate = (increment) => {
-    setCounterValue(increment ? counterValue + 1 : counterValue - 1);
-  };
-
   return (
     <div className="relative w-screen h-[calc(100vh-4rem)] bg-black">
       <video
@@ -255,8 +245,7 @@ function QrScannerComponent() {
               </>
             ) : (
               <>
-                Streak: {processMeetUpSuccess[2]}
-                <br />
+                Streak: <StreakAnimation streak={((processMeetUpSuccess[2] ?? 0) - 1)}></StreakAnimation> <br />
                 {processMeetUpSuccess[3] ? ' Streak increased' : ' Streak not increased'}
               </>
             )}
