@@ -40,9 +40,9 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
       Math.pow(userLon - parseFloat(friendLon), 2)
     );
 
-    // if (isNaN(distance)) {
-    //   return [false, "Invalid QR location data"];
-    // }
+    if (isNaN(distance)) {
+      return [false, "Invalid QR location data"];
+    }
 
     console.log(`User location: ${userLat}, ${userLon}`);
     console.log(`Friend location: ${friendLat}, ${friendLon}`);
@@ -72,6 +72,7 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
       let streakIncreased = false;
 
       if (lastMeetup) {
+        // TODO: Fix this code. Streak and points logic broken
         const lastDate = new Date(lastMeetup.timestamp);
         const now = new Date();
         const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
