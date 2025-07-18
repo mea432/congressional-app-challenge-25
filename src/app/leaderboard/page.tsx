@@ -181,6 +181,7 @@ export default function Leaderboard() {
               <div>
                 <h2>Top 10 Streaks</h2> {/* TODO: Make this look better and highlight the entry if you are on the leaderboard */}
                 <ul>
+                  {topStreaks.length === 0 ? ("Loading...") : (<></>)}
                   {topStreaks.map(({ userA, userB, streak }, index) => (
                     <li key={index}>
                       {userA.displayName} 🔥 {streak} 🔥 {userB.displayName}
