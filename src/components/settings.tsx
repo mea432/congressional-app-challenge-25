@@ -93,76 +93,72 @@ export default function SettingsComponent() {
         <div className="space-y-2">
           <div><b>UID:</b> {user.uid}</div>
           <div><b>Email:</b> {user.email}</div>
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <b>Display Name:</b>
             {editingDisplayName ? (
               <>
-              <input
-                type="text"
-                value={newDisplayName}
-                onChange={(e) => setNewDisplayName(e.target.value)}
-                className="border rounded px-1 py-0.5 text-sm"
-              />
-              <Button
-                size="sm"
-                onClick={async () => {
-                if (newDisplayName.trim() && user) {
-                  await updateProfile(user as User, { displayName: newDisplayName });
-                  await updateDoc(doc(db, "users", user.uid), { displayName: newDisplayName });
-                  setUser({ ...user, displayName: newDisplayName });
-                  setEditingDisplayName(false);
-                }
-                }}
-              >
-                Save
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                setEditingDisplayName(false);
-                setNewDisplayName(user.displayName || "");
-                }}
-              >
-                Cancel
-              </Button>
+                <input
+                  type="text"
+                  value={newDisplayName}
+                  onChange={(e) => setNewDisplayName(e.target.value)}
+                  className="border rounded px-1 py-0.5 text-sm"
+                />
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    if (newDisplayName.trim() && user) {
+                      await updateProfile(user as User, { displayName: newDisplayName });
+                      await updateDoc(doc(db, "users", user.uid), { displayName: newDisplayName });
+                      setUser({ ...user, displayName: newDisplayName });
+                      setEditingDisplayName(false);
+                    }
+                  }}
+                >
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditingDisplayName(false);
+                    setNewDisplayName(user.displayName || "");
+                  }}
+                >
+                  Cancel
+                </Button>
               </>
             ) : (
               <>
-              <span>{user.displayName}</span>
-              <button
-                type="button"
-                aria-label="Edit display name"
-                className="ml-1"
-                onClick={() => setEditingDisplayName(true)}
-              >
-                <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-500 hover:text-gray-700"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+                <span>{user.displayName}</span>
+                <button
+                  type="button"
+                  aria-label="Edit display name"
+                  className="ml-1"
+                  onClick={() => setEditingDisplayName(true)}
                 >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828A2 2 0 019 17H7v-2a2 2 0 01.586-1.414z"
-                />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-gray-500 hover:text-gray-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828A2 2 0 019 17H7v-2a2 2 0 01.586-1.414z"
+                    />
+                  </svg>
+                </button>
               </>
             )}
-            </div>
-            <Link href="/tutorial" >Go to tutorial</Link>
-
-            <br />
-            <br />
-            <Button>Change Password</Button>
-
-
+          </div>
           <br />
-
+          <Button onClick={() => window.location.replace("/tutorial")}>Go to tutorial</Button>
+          <br />
+          <Button>Change Password</Button>
+          <br />
           <Button onClick={() => signOut(auth)} className="text-sm cursor-pointer">Sign Out</Button>
           <br />
           <Button onClick={() => deleteAccount(user.uid)} disabled={deleting}>
