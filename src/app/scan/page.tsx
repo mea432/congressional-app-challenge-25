@@ -72,15 +72,19 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
       let streakIncreased = false;
 
       if (lastMeetup) {
-        // TODO: Fix this code. Streak and points logic broken
+        // TODO: Fix this code. Streak and points logic broken. Also, make it take into account the meet interval
         const lastDate = new Date(lastMeetup.timestamp);
         const now = new Date();
         const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const lastDateDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
 
-        if (lastDateDay.getTime() !== yesterday.getTime()) {
+        if ((lastDateDay.getTime() !== yesterday.getTime()) && (lastDateDay.getTime() !== today.getTime())) {
+          console.log("Didn't meet up yesterday, so the streak gets reset to 1")
           const connectionRef = doc(db, "connections", connectionId);
           await setDoc(connectionRef, { streak: 1, streak_expire: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2) }, { merge: true });
+        } else if (lastDateDay.getTime() == today.getTime()) {
+          console.log("Last meeting was in the same day, so nothing happens to the streak")
         } else {
           const connectionRef = doc(db, "connections", connectionId);
           const connectionSnap = await getDoc(connectionRef);
