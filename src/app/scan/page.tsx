@@ -80,9 +80,10 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
         const lastDateDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
 
         if ((lastDateDay.getTime() !== yesterday.getTime()) && (lastDateDay.getTime() !== today.getTime())) {
-          console.log("Didn't meet up yesterday, so the streak gets reset to 1")
+          console.log("Didn't meet up yesterday, so the streak gets reset to 1 or a new streak gets created")
           const connectionRef = doc(db, "connections", connectionId);
           await setDoc(connectionRef, { streak: 1, streak_expire: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2) }, { merge: true });
+          streakIncreased = true;
         } else if (lastDateDay.getTime() == today.getTime()) {
           console.log("Last meeting was in the same day, so nothing happens to the streak")
         } else {
