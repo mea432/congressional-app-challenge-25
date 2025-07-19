@@ -123,6 +123,7 @@ export default function AddFriendComponent() {
       const connectionRef = await addDoc(collection(db, "connections"), {
         users: [currentUserId, fromUserId],
         createdAt: Date.now(),
+        meetInterval: 1,
       });
       // Add to both users' friends subcollections
       await setDoc(doc(db, `users/${currentUserId}/friends`, fromUserId), {

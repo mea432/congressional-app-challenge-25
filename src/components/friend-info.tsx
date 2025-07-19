@@ -1,5 +1,5 @@
 import { db } from "@/app/firebaseConfig";
-import { deleteDoc, doc } from "firebase/firestore";
+import { deleteDoc, doc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
 import Image from "next/image";
 import { useState, useRef } from "react";
 import { useGesture } from '@use-gesture/react';
@@ -61,18 +61,90 @@ export default function FriendInfo({
   const handleRemoveFriend = async () => {
     if (confirm("Are you sure? Removing a friend is permanent and deletes all data from the friendship.")) {
       if (!currentUserId || !friendId || !connectionId) return;
-        try {
-          await deleteDoc(doc(db, "connections", connectionId));
-          await deleteDoc(doc(db, `users/${currentUserId}/friends`, friendId));
-          await deleteDoc(doc(db, `users/${friendId}/friends`, currentUserId));
-          onClose();
-          onFriendRemoved();
-        } catch (err) {
-          alert("Failed to remove friend.");
-          console.error(err);
-        }
-      };
+      try {
+        await deleteDoc(doc(db, "connections", connectionId));
+        await deleteDoc(doc(db, `users/${currentUserId}/friends`, friendId));
+        await deleteDoc(doc(db, `users/${friendId}/friends`, currentUserId));
+        onClose();
+        onFriendRemoved();
+      } catch (err) {
+        alert("Failed to remove friend.");
+        console.error(err);
+      }
     }
+  };
+
+  // --- New UpdateMeetIntervalButton logic starts here ---
+
+  const [currentConnectionId, setCurrentConnectionId] = useState<string | null>(connectionId || null);
+  const [meetInterval, setMeetInterval] = useState<number | "">("");
+  const [loadingMeet, setLoadingMeet] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const fetchConnection = async () => {
+    setLoadingMeet(true);
+    setMessage("");
+    setCurrentConnectionId(null);
+    setMeetInterval("");
+
+    try {
+      const connectionsRef = collection(db, "connections");
+      const q = query(connectionsRef, where("users", "array-contains", currentUserId));
+      const querySnapshot = await getDocs(q);
+
+      let foundConnectionId: string | null = null;
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const users: string[] = data.users || [];
+        if (users.includes(friendId)) {
+          foundConnectionId = docSnap.id;
+          setMeetInterval(data.meetInterval ?? "");
+        }
+      });
+
+      if (foundConnectionId) {
+        setCurrentConnectionId(foundConnectionId);
+      } else {
+        setMessage("No connection found between these users.");
+      }
+    } catch (error) {
+      console.error("Error fetching connection:", error);
+      setMessage("Failed to fetch connection.");
+    } finally {
+      setLoadingMeet(false);
+    }
+  };
+
+  const updateMeetInterval = async () => {
+    if (!currentConnectionId) {
+      setMessage("No connection to update.");
+      return;
+    }
+
+    if (meetInterval === "" || isNaN(Number(meetInterval)) || Number(meetInterval) < 1) {
+      setMessage("Please enter a valid positive number for meetInterval.");
+      return;
+    }
+
+    setLoadingMeet(true);
+    setMessage("");
+
+    try {
+      const connectionDocRef = doc(db, "connections", currentConnectionId);
+      await updateDoc(connectionDocRef, {
+        meetInterval: Number(meetInterval),
+      });
+      setMessage("meetInterval updated successfully!");
+    } catch (error) {
+      console.error("Error updating meetInterval:", error);
+      setMessage("Failed to update meetInterval.");
+    } finally {
+      setLoadingMeet(false);
+    }
+  };
+
+  // --- New UpdateMeetIntervalButton UI ---
 
   return (
     <div className="fixed inset-0 z-50 max-w-screen overflow-y-auto">
@@ -134,6 +206,49 @@ export default function FriendInfo({
             ))
           )}
         </ul>
+
+        {/* Update Meet Interval Section */}
+        <div className="border p-4 rounded my-6 max-w-md mx-auto bg-gray-50 shadow">
+          <button
+            onClick={fetchConnection}
+            disabled={loadingMeet}
+            className="bg-blue-600 text-white px-4 py-2 rounded mr-3"
+          >
+            Get Connection & meetInterval
+          </button>
+
+          {currentConnectionId && (
+            <>
+              <p className="mt-3 break-words"><strong>Connection ID:</strong> {currentConnectionId}</p>
+              <label className="block mt-2">
+                Meet Interval:{" "}
+                <input
+                  type="number"
+                  min={1}
+                  value={meetInterval}
+                  onChange={(e) =>
+                    setMeetInterval(e.target.value === "" ? "" : Number(e.target.value))
+                  }
+                  className="border rounded px-2 py-1 w-24"
+                />
+              </label>
+
+              <button
+                onClick={updateMeetInterval}
+                disabled={loadingMeet}
+                className="bg-green-600 text-white px-4 py-2 rounded mt-3"
+              >
+                Update meetInterval
+              </button>
+            </>
+          )}
+
+          {message && (
+            <p className={`mt-3 text-sm ${message.toLowerCase().includes("failed") ? "text-red-600" : "text-green-600"}`}>
+              {message}
+            </p>
+          )}
+        </div>
 
         <button
           onClick={handleRemoveFriend}
