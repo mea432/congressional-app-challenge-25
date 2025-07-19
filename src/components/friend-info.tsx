@@ -1,5 +1,5 @@
 import { db } from "@/app/firebaseConfig";
-import { deleteDoc, doc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc, collection, query, where, getDocs, updateDoc, DocumentData, Query } from "firebase/firestore";
 import Image from "next/image";
 import { useState, useRef } from "react";
 import { useGesture } from '@use-gesture/react';
@@ -58,18 +58,44 @@ export default function FriendInfo({
     tapRef.current = now;
   };
 
+  const deleteSubcollection = async (subcollectionRef: Query<unknown, DocumentData>) => {
+    const snapshot = await getDocs(subcollectionRef);
+    const deletePromises = snapshot.docs.map((docSnap) => deleteDoc(docSnap.ref));
+    await Promise.all(deletePromises);
+  };
+
   const handleRemoveFriend = async () => {
-    if (confirm("Are you sure? Removing a friend is permanent and deletes all data from the friendship.")) {
-      if (!currentUserId || !friendId || !connectionId) return;
+    if (
+      confirm(
+        "Are you sure? Removing a friend is permanent and deletes all data from the friendship."
+      )
+    ) {
+      if (!currentUserId || !friendId || !connectionId) {
+        alert("Missing user or connection information.");
+        return;
+      }
+
       try {
-        await deleteDoc(doc(db, "connections", connectionId));
-        await deleteDoc(doc(db, `users/${currentUserId}/friends`, friendId));
-        await deleteDoc(doc(db, `users/${friendId}/friends`, currentUserId));
+        const connectionRef = doc(db, "connections", connectionId);
+        const meetupsRef = collection(db, "connections", connectionId, "meetups");
+
+        // Recursively delete 'meetups' subcollection
+        await deleteSubcollection(meetupsRef);
+
+        // Delete the connection document
+        await deleteDoc(connectionRef);
+
+        // Delete friendship references for both users
+        await Promise.all([
+          deleteDoc(doc(db, `users/${currentUserId}/friends`, friendId)),
+          deleteDoc(doc(db, `users/${friendId}/friends`, currentUserId))
+        ]);
+
         onClose();
         onFriendRemoved();
       } catch (err) {
         alert("Failed to remove friend.");
-        console.error(err);
+        console.error("Error during friend removal:", err);
       }
     }
   };
