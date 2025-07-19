@@ -9,7 +9,6 @@ import { db } from "@/app/firebaseConfig";
 import { collection, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
 import MainContent from "@/components/main-content";
 import FriendInfo from "@/components/friend-info";
-import { time } from "console";
 
 function FriendsList({ user }: { user: any }) {
   const [friends, setFriends] = useState<any[] | null>(null);
@@ -79,39 +78,7 @@ function FriendsList({ user }: { user: any }) {
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl font-semibold mb-4">Your Friends</h2>
-      <div className="space-y-2">
-        {friends === null ? (
-          <div className="text-gray-500">
-            Loading...
-          </div>
-        ) : friends.length === 0 ? (
-          <div className="text-gray-500">
-            No friends yet. Add friends to see them here!
-          </div>
-        ) : (
-          friends.map(friend => (
-            <button
-              key={friend.friendId}
-              className="flex items-center gap-4 w-full bg-white rounded shadow p-3 hover:bg-gray-50 transition border cursor-pointer"
-              onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups, friendUsername: friend.displayName, friendProfilePicUrl: friend.avatar })} // Pass meetups to FriendInfo
-          >
-            <Image
-              src={friend.avatar} // Use a default avatar if none exists
-              alt="avatar"
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-full border object-cover object-center"
-            />
-            <span className="text-lg font-medium">{friend.displayName}
-              {friend.streak !== undefined && (
-                <span className="ml-2 text-sm text-gray-500">Streak: {friend.streak}</span>
-              )}
-            </span>
-          </button>
-        )))}
-      </div>
-      {selectedFriend && (
+      {selectedFriend ? (
         <FriendInfo
           friendId={selectedFriend.friendId}
           connectionId={selectedFriend.connectionId}
@@ -123,7 +90,41 @@ function FriendsList({ user }: { user: any }) {
           onClose={() => setSelectedFriend(null)}
           onFriendRemoved={fetchFriends}
         />
-      )}
+      ) : (
+        <>
+          <h2 className="text-2xl font-semibold mb-4">Your Friends</h2>
+          <div className="space-y-2">
+            {friends === null ? (
+              <div className="text-gray-500">
+                Loading...
+              </div>
+            ) : friends.length === 0 ? (
+              <div className="text-gray-500">
+                No friends yet. Add friends to see them here!
+              </div>
+            ) : (
+              friends.map(friend => (
+                <button
+                  key={friend.friendId}
+                  className="flex items-center gap-4 w-full bg-white rounded shadow p-3 hover:bg-gray-50 transition border cursor-pointer"
+                  onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups, friendUsername: friend.displayName, friendProfilePicUrl: friend.avatar })} // Pass meetups to FriendInfo
+                >
+                  <Image
+                    src={friend.avatar} // Use a default avatar if none exists
+                    alt="avatar"
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-full border object-cover object-center"
+                  />
+                  <span className="text-lg font-medium">{friend.displayName}
+                    {friend.streak !== undefined && (
+                      <span className="ml-2 text-sm text-gray-500">Streak: {friend.streak}</span>
+                    )}
+                  </span>
+                </button>
+              )))}
+          </div>
+        </>)}
     </div>
   );
 }
