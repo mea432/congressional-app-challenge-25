@@ -93,6 +93,15 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
           streakIncreased = true;
         } else if (lastDateDay.getTime() == today.getTime()) {
           console.log("Last meeting was in the same day, so nothing happens to the streak")
+          const connectionRef = doc(db, "connections", connectionId);
+          const connectionSnap = await getDoc(connectionRef);
+          streak = 1;
+          if (connectionSnap.exists()) {
+            const data = connectionSnap.data();
+            if (typeof data.streak === "number") {
+              streak = data.streak;
+            }
+          }
         } else {
           const connectionRef = doc(db, "connections", connectionId);
           const connectionSnap = await getDoc(connectionRef);
@@ -101,43 +110,43 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
             const data = connectionSnap.data();
             if (typeof data.streak === "number") {
               streak = data.streak + 1;
-              streakIncreased = true;
+            }
+            streakIncreased = true;
 
-              // Update points for both users robustly
-              try {
-                // User points update
-                const userRef = doc(db, "users", userUid);
-                const friendRef = doc(db, "users", friendId);
+            // Update points for both users robustly
+            try {
+              // User points update
+              const userRef = doc(db, "users", userUid);
+              const friendRef = doc(db, "users", friendId);
 
-                console.log("[Meetup] userUid:", userUid, "userRef.path:", userRef.path);
-                console.log("[Meetup] friendId:", friendId, "friendRef.path:", friendRef.path);
+              console.log("[Meetup] userUid:", userUid, "userRef.path:", userRef.path);
+              console.log("[Meetup] friendId:", friendId, "friendRef.path:", friendRef.path);
 
-                // Get user points (handle missing doc/field)
-                let userPoints = 0;
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                  const data = userSnap.data();
-                  userPoints = typeof data.points === "number" ? data.points : 0;
-                } else {
-                  console.log("[Meetup] User document does not exist, will create with points=1");
-                }
-                await setDoc(userRef, { points: userPoints + 1 }, { merge: true });
-                console.log("[Meetup] Updated user points to", userPoints + 1);
-
-                // Get friend points (handle missing doc/field)
-                let friendPoints = 0;
-                const friendSnap = await getDoc(friendRef);
-                if (friendSnap.exists()) {
-                  const data = friendSnap.data();
-                  friendPoints = typeof data.points === "number" ? data.points : 0;
-                } else {
-                  console.log("[Meetup] Friend document does not exist, will create with points=1");
-                }
-                await setDoc(friendRef, { points: friendPoints + 1 }, { merge: true });
-                console.log("[Meetup] Updated friend points to", friendPoints + 1);
-              } catch (err) {
-                console.error("[Meetup] Error updating points:", err);
+              // Get user points (handle missing doc/field)
+              let userPoints = 0;
+              const userSnap = await getDoc(userRef);
+              if (userSnap.exists()) {
+                const data = userSnap.data();
+                userPoints = typeof data.points === "number" ? data.points : 0;
+              } else {
+                console.log("[Meetup] User document does not exist, will create with points=1");
               }
+              await setDoc(userRef, { points: userPoints + 1 }, { merge: true });
+              console.log("[Meetup] Updated user points to", userPoints + 1);
+
+              // Get friend points (handle missing doc/field)
+              let friendPoints = 0;
+              const friendSnap = await getDoc(friendRef);
+              if (friendSnap.exists()) {
+                const data = friendSnap.data();
+                friendPoints = typeof data.points === "number" ? data.points : 0;
+              } else {
+                console.log("[Meetup] Friend document does not exist, will create with points=1");
+              }
+              await setDoc(friendRef, { points: friendPoints + 1 }, { merge: true });
+              console.log("[Meetup] Updated friend points to", friendPoints + 1);
+            } catch (err) {
+              console.error("[Meetup] Error updating points:", err);
             }
           }
           await setDoc(connectionRef, { streak, streak_expire: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2) }, { merge: true });
