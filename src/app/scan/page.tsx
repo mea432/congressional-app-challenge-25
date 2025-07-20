@@ -1,9 +1,9 @@
 'use client';
 
-// imgbb api key: e42686b6e29d3a7a92bab30aca542c96
 import { useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 import QRCode from '@/components/qr-code';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import PageProtected from '@/components/authentication';
 import TopNavbar from "@/components/top-navbar";
@@ -75,14 +75,21 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
         // TODO: Fix this code. Streak and points logic broken. Also, make it take into account the meet interval
         const lastDate = new Date(lastMeetup.timestamp);
         const now = new Date();
-        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0)
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        today.setHours(0, 0, 0, 0)
         const lastDateDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+        lastDateDay.setHours(0, 0, 0, 0)
 
         if ((lastDateDay.getTime() !== yesterday.getTime()) && (lastDateDay.getTime() !== today.getTime())) {
           console.log("Didn't meet up yesterday, so the streak gets reset to 1 or a new streak gets created")
           const connectionRef = doc(db, "connections", connectionId);
-          await setDoc(connectionRef, { streak: 1, streak_expire: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2) }, { merge: true });
+          const expire = new Date();
+          expire.setDate(now.getDate() + 2);
+          expire.setHours(0, 0, 0, 0);
+          await setDoc(connectionRef, { streak: 1, streak_expire: expire }, { merge: true });
           streakIncreased = true;
         } else if (lastDateDay.getTime() == today.getTime()) {
           console.log("Last meeting was in the same day, so nothing happens to the streak")
@@ -156,7 +163,6 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
 
 function QrScannerComponent() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [scannedData, setScannedData] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [processMeetUpSuccess, setProcessMeetUpSuccess] = useState<[boolean, string, number?, boolean?, string?, string?] | null>(null);
@@ -165,6 +171,13 @@ function QrScannerComponent() {
   const hasScanned = useRef(false);
   const [showSelfieModal, setShowSelfieModal] = useState(false);
   const [showStreak, setShowStreak] = useState(false)
+  const [showResultPanel, setShowResultPanel] = useState(false);
+
+  useEffect(() => {
+    if (processMeetUpSuccess) {
+      setShowResultPanel(true);
+    }
+  }, [processMeetUpSuccess]);
 
   useEffect(() => {
     const startScanner = async () => {
@@ -182,8 +195,8 @@ function QrScannerComponent() {
                 setScannedData(result.data);
                 console.log("Scanned data:", result.data);
                 processMeetUp(result.data).then(setProcessMeetUpSuccess);
-                scannerRef.current?.stop();
-                streamRef.current?.getTracks().forEach(track => track.stop());
+                // scannerRef.current?.stop();
+                // streamRef.current?.getTracks().forEach(track => track.stop());
               }
             },
             {
@@ -203,116 +216,125 @@ function QrScannerComponent() {
 
     return () => {
       scannerRef.current?.stop();
+      scannerRef.current?.destroy(); // important cleanup
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, [scannedData]);
+  }, []);
 
   return (
     <div className="relative w-screen h-[calc(100vh-4rem)] bg-black">
       <video
         ref={videoRef}
-        className={`absolute top-0 left-0 w-full h-full object-cover 'hidden'`}
+        className={`absolute top-0 left-0 w-full h-full object-cover`}
         autoPlay
         muted
         playsInline
       />
+      {/* Result Panel */}
+      <AnimatePresence>
+        {showResultPanel && (
+          <motion.div
+            key="result-panel"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'tween', duration: 0.4 }}
+            className="absolute inset-0 bg-white bg-opacity-95 z-30 flex flex-col justify-center items-center text-center p-6"
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
+              {!scannedData && (
+                <h1 className="text-3xl font-bold mb-4">Scan a friend's QR Code</h1>
+              )}
 
-      <canvas
-        ref={canvasRef}
-        className={`absolute top-0 left-0 w-full h-full object-cover 'hidden'`}
-      />
+              {scannedData && !processMeetUpSuccess && (
+                <div className="bg-green-600 bg-opacity-80 p-4 rounded text-white text-lg">
+                  ✅ Scanned: <strong>Loading</strong>
+                </div>
+              )}
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
-        {!scannedData && (
-          <h1 className="text-3xl font-bold mb-4">Scan a friend's QR Code</h1>
+              {(processMeetUpSuccess && processMeetUpSuccess[0] == true) && (
+                <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
+                  🎉 Meetup confirmed!
+                  <br />
+                  {(!showStreak) ? (
+                    <>
+                      <p>Optional: </p>
+                      <button
+                        className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition"
+                        onClick={() => setShowSelfieModal(true)}
+                      >
+                        Add a Selfie
+                      </button>
+                      <button className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition ml-2" onClick={() => setShowStreak(true)}>No</button>
+                    </>
+                  ) : (
+                    <>
+                      Streak: <br />
+                      {processMeetUpSuccess[3] ? (<StreakAnimation streak={((processMeetUpSuccess[2] ?? 0) - 1)}></StreakAnimation>) : (<p>{processMeetUpSuccess[2]} (Streak not increased)</p>)}
+                      <Image src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyM2JpaHBvdnJoaXZkMGJsMWZrb2N5a3p2eXptdHF5N252a2FjNnR6ZiZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9ZQ/J2awouDsf23R2vo2p5/source.gif" width={24} height={24} alt='GIF of flame' />
+                      <Button onClick={() => window.location.reload()}>OK</Button>
+                      {/* TODO: add sharing streaks (need to generate like an image of the streak like duolingo) */}
+                    </>
+                  )}
+
+                </div>
+              )}
+
+              {(processMeetUpSuccess && processMeetUpSuccess[0] === false) && (
+                <div className="bg-yellow-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
+                  ❌ Meetup failed. Please try again. {processMeetUpSuccess[1]}
+                  <br />
+                  <Button onClick={() => { window.location.reload() }}>Try again</Button>
+                </div>
+              )}
+
+              {error && (
+                <div className="bg-red-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
+                  ⚠️ Error: {error}
+                  <br />
+                  <Button onClick={() => { window.location.reload() }}>Try again</Button>
+                </div>
+              )}
+
+
+              {showSelfieModal && (
+                <SelfieCaptureModal
+                  onClose={() => setShowSelfieModal(false)}
+                  onUpload={(imgUrl, caption) => {
+                    console.log("Uploaded selfie URL:", imgUrl);
+                    console.log("Caption:", caption);
+                    if (!processMeetUpSuccess || !processMeetUpSuccess[4] || !processMeetUpSuccess[5]) {
+                      console.error("No connection ID or meetup ID available for selfie upload");
+                      return;
+                    }
+                    // Add selfie_url and caption to the specific meetup document
+                    const meetupDocRef = doc(
+                      db,
+                      "connections",
+                      processMeetUpSuccess[4] as string,
+                      "meetups",
+                      processMeetUpSuccess[5] as string
+                    );
+                    setDoc(
+                      meetupDocRef,
+                      {
+                        selfie_url: imgUrl,
+                        caption,
+                      },
+                      { merge: true }
+                    );
+
+                    setShowStreak(true)
+                  }}
+                />
+              )}
+
+            </div>
+          </motion.div>
         )}
-
-        {scannedData && !processMeetUpSuccess && (
-          <div className="bg-green-600 bg-opacity-80 p-4 rounded text-white text-lg">
-            ✅ Scanned: <strong>Loading</strong>
-          </div>
-        )}
-
-        {(processMeetUpSuccess && processMeetUpSuccess[0] == true) && (
-          <div className="bg-blue-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
-            🎉 Meetup confirmed!
-            <br />
-            {(!showStreak) ? (
-              <>
-                <p>Optional: </p>
-                <button
-                  className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition"
-                  onClick={() => setShowSelfieModal(true)}
-                >
-                  Add a Selfie
-                </button>
-                <button className="mt-2 bg-white text-black px-3 py-1 rounded cursor-pointer hover:bg-gray-100 transition ml-2" onClick={() => setShowStreak(true)}>No</button>
-              </>
-            ) : (
-              <>
-                Streak: <br />
-                {processMeetUpSuccess[3] ? (<StreakAnimation streak={((processMeetUpSuccess[2] ?? 0) - 1)}></StreakAnimation>) : (<p>{processMeetUpSuccess[2]} (Streak not increased)</p>)}
-                <Image src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyM2JpaHBvdnJoaXZkMGJsMWZrb2N5a3p2eXptdHF5N252a2FjNnR6ZiZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9ZQ/J2awouDsf23R2vo2p5/source.gif" width={24} height={24} alt='GIF of flame' />
-                <Button onClick={() => window.location.reload()}>OK</Button>
-                {/* TODO: add sharing streaks (need to generate like an image of the streak like duolingo) */}
-              </>
-            )}
-
-          </div>
-        )}
-
-        {(processMeetUpSuccess && processMeetUpSuccess[0] === false) && (
-          <div className="bg-yellow-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
-            ❌ Meetup failed. Please try again. {processMeetUpSuccess[1]}
-            <br />
-            <Button onClick={() => { window.location.reload() }}>Try again</Button>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-600 bg-opacity-80 p-4 rounded text-white text-lg mt-4">
-            ⚠️ Error: {error}
-            <br />
-            <Button onClick={() => { window.location.reload() }}>Try again</Button>
-          </div>
-        )}
-
-
-        {showSelfieModal && (
-          <SelfieCaptureModal
-            onClose={() => setShowSelfieModal(false)}
-            onUpload={(imgUrl, caption) => {
-              console.log("Uploaded selfie URL:", imgUrl);
-              console.log("Caption:", caption);
-              if (!processMeetUpSuccess || !processMeetUpSuccess[4] || !processMeetUpSuccess[5]) {
-                console.error("No connection ID or meetup ID available for selfie upload");
-                return;
-              }
-              // Add selfie_url and caption to the specific meetup document
-              const meetupDocRef = doc(
-                db,
-                "connections",
-                processMeetUpSuccess[4] as string,
-                "meetups",
-                processMeetUpSuccess[5] as string
-              );
-              setDoc(
-                meetupDocRef,
-                {
-                  selfie_url: imgUrl,
-                  caption,
-                },
-                { merge: true }
-              );
-
-              setShowStreak(true)
-            }}
-          />
-        )}
-
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

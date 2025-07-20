@@ -88,7 +88,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-lg p-4 max-w-sm w-full relative">
         <button
           onClick={onClose}
@@ -115,7 +115,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
             </button>
           </>
         ) : (
-            <>
+          <>
             <img
               src={previewUrl}
               alt="Preview"
@@ -135,7 +135,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
             >
               {uploading ? "Uploading..." : "Upload"}
             </button>
-            </>
+          </>
         )}
       </div>
       <canvas ref={canvasRef} style={{ display: "none" }} />
