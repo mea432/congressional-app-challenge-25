@@ -365,7 +365,7 @@ export default function QrScanPage() {
   const [firstPermissionCheck, setFirstPermissionCheck] = useState(true);
   const showPermissionPopup =
     permissionsChecked &&
-    (cameraPermission !== 'granted' || geoPermission !== 'granted');
+    (cameraPermission !== 'granted' || (geoPermission !== 'granted' && geoPermission !== 'prompt'));
 
   // Function to check permissions
   const checkPermissions = async () => {
@@ -510,7 +510,7 @@ export default function QrScanPage() {
                       <span>Camera Permission</span>
                     </li>
                     <li className="flex items-center">
-                      {geoPermission === 'granted' || 'prompt' ? (
+                      {geoPermission === 'granted' || geoPermission === 'prompt' ? (
                         <span className="text-green-600 mr-2">✅</span>
                       ) : (
                         <span className="text-red-600 mr-2">❌</span>
