@@ -72,7 +72,7 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
       let streakIncreased = false;
 
       if (lastMeetup) {
-        // TODO: Fix this code. Streak and points logic broken. Also, make it take into account the meet interval
+        // TODO: make it take into account the meet interval
         const lastDate = new Date(lastMeetup.timestamp);
         const now = new Date();
         const yesterday = new Date(now);
@@ -397,11 +397,11 @@ export default function QrScanPage() {
             if (error.code === error.PERMISSION_DENIED) {
               geoStatus = 'denied';
             } else {
-              geoStatus = 'prompt';
+              geoStatus = 'prompt'; // Covers TIMEOUT or POSITION_UNAVAILABLE
             }
             resolve();
           },
-          { timeout: 1000 }
+          { timeout: 5000 } // More realistic timeout for mobile devices
         );
       });
     } else {
