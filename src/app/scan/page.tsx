@@ -510,7 +510,7 @@ export default function QrScanPage() {
                       <span>Camera Permission</span>
                     </li>
                     <li className="flex items-center">
-                      {geoPermission === 'granted' ? (
+                      {geoPermission === 'granted' || 'prompt' ? (
                         <span className="text-green-600 mr-2">✅</span>
                       ) : (
                         <span className="text-red-600 mr-2">❌</span>
