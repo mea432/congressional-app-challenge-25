@@ -6,7 +6,7 @@ import PageProtected from "@/components/authentication";
 import TopNavbar from "@/components/top-navbar";
 import BottomNavbar from "@/components/bottom-navbar";
 import { db } from "@/app/firebaseConfig";
-import { collection, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, deleteDoc, updateDoc, deleteField } from "firebase/firestore";
 import MainContent from "@/components/main-content";
 import FriendInfo from "@/components/friend-info";
 
@@ -37,7 +37,22 @@ function FriendsList({ user }: { user: any }) {
       const connectionDoc = await getDoc(doc(db, "connections", data.connectionId));
       if (connectionDoc.exists()) {
         const connectionData = connectionDoc.data();
-        streak = connectionData.streak || undefined;
+        if (connectionData.streak_expire !== undefined) {
+          const today = new Date();
+          const streak_expire_date = new Date(connectionData.streak_expire.toDate())
+          console.log("Today: ", today)
+          console.log("Steak expire: ", streak_expire_date)
+          if (streak_expire_date < today) {
+            console.log("Streak expired");
+            await updateDoc(doc(db, "connections", data.connectionId), {
+              streak: deleteField(),
+              streak_expire: deleteField(),
+            });
+          } else {
+            console.log("streak not expired")
+            streak = connectionData.streak || undefined;
+          }
+        }
       }
 
       let meetups = [];
