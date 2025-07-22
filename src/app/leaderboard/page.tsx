@@ -18,15 +18,6 @@ interface UserData {
   avatar: string;
 }
 
-
-// Define your types
-type UserDataType = {
-  id: string;
-  displayName: string;
-  points: number;
-  avatar: string;
-};
-
 type StreakEntry = {
   userA: UserData;
   userB: UserData;
@@ -131,7 +122,6 @@ export default function Leaderboard() {
   return (
     <PageProtected>
       {(user) => {
-
         return (
           <>
             <TopNavbar />

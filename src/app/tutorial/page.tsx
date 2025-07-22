@@ -26,7 +26,7 @@ export default function tutorial() {
       <br />
       <br />
 
-      <Button onClick={() => window.location.replace("/home")}>Go to home page</Button>
+      <Button onClick={() => window.location.href = "/home"}>Go to home page</Button>
     </MainContent>
   )
 }
