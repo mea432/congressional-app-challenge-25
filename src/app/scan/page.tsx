@@ -72,7 +72,7 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
       let streakIncreased = false;
 
       if (lastMeetup) {
-        // TODO: make it take into account the meet interval
+        // TODO: make it take into account the meet interval. Also, make sure the point system makes sense
         const lastDate = new Date(lastMeetup.timestamp);
         const now = new Date();
         const yesterday = new Date(now);
@@ -131,7 +131,7 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
               } else {
                 console.log("[Meetup] User document does not exist, will create with points=1");
               }
-              await setDoc(userRef, { points: userPoints + 1 }, { merge: true });
+              await setDoc(userRef, { points: userPoints + 1 * streak }, { merge: true });
               console.log("[Meetup] Updated user points to", userPoints + 1);
 
               // Get friend points (handle missing doc/field)
