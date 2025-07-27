@@ -175,7 +175,7 @@ export default function Leaderboard() {
                   {topStreaks === null ? ("Loading...") : (
                     topStreaks.map(({ userA, userB, streak }, index) => (
                       <li key={index}>
-                        {userA.displayName} 🔥 {streak} 🔥 {userB.displayName}
+                        {userA.displayName} & {userB.displayName} with a streak of {streak} 🔥
                       </li>
                     ))
                   )}
