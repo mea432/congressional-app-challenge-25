@@ -125,7 +125,7 @@ function FriendsList({ user }: { user: any }) {
                   onClick={() => setSelectedFriend({ friendId: friend.friendId, connectionId: friend.connectionId, streak: friend.streak, meetups: friend.meetups, friendUsername: friend.displayName, friendProfilePicUrl: friend.avatar })} // Pass meetups to FriendInfo
                 >
                   <Image
-                    src={friend.avatar} // Use a default avatar if none exists
+                    src={friend.avatar}
                     alt="avatar"
                     width={40}
                     height={40}

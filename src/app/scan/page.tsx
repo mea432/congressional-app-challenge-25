@@ -113,16 +113,13 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
             }
             streakIncreased = true;
 
-            // Update points for both users robustly
             try {
-              // User points update
               const userRef = doc(db, "users", userUid);
               const friendRef = doc(db, "users", friendId);
 
               console.log("[Meetup] userUid:", userUid, "userRef.path:", userRef.path);
               console.log("[Meetup] friendId:", friendId, "friendRef.path:", friendRef.path);
 
-              // Get user points (handle missing doc/field)
               let userPoints = 0;
               const userSnap = await getDoc(userRef);
               if (userSnap.exists()) {
@@ -134,7 +131,6 @@ async function processMeetUp(code: string): Promise<[boolean, string, number?, b
               await setDoc(userRef, { points: userPoints + 1 * streak }, { merge: true });
               console.log("[Meetup] Updated user points to", userPoints + 1);
 
-              // Get friend points (handle missing doc/field)
               let friendPoints = 0;
               const friendSnap = await getDoc(friendRef);
               if (friendSnap.exists()) {
@@ -225,7 +221,7 @@ function QrScannerComponent() {
 
     return () => {
       scannerRef.current?.stop();
-      scannerRef.current?.destroy(); // important cleanup
+      scannerRef.current?.destroy();
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -325,7 +321,6 @@ function QrScannerComponent() {
                       console.error("No connection ID or meetup ID available for selfie upload");
                       return;
                     }
-                    // Add selfie_url and caption to the specific meetup document
                     const meetupDocRef = doc(
                       db,
                       "connections",
@@ -356,7 +351,6 @@ function QrScannerComponent() {
 }
 
 export default function QrScanPage() {
-  // Track individual permission states
   const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [geoPermission, setGeoPermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [expanded, setExpanded] = useState(false);
@@ -368,13 +362,11 @@ export default function QrScanPage() {
     permissionsChecked &&
     (cameraPermission !== 'granted' || (geoPermission !== 'granted' && geoPermission !== 'prompt'));
 
-  // Function to check permissions
   const checkPermissions = async () => {
-    // iOS Safari does not support Permissions API for camera, so we check by trying to access the devices directly
     let cameraStatus: 'granted' | 'denied' | 'prompt' | 'unknown' = 'unknown';
     let geoStatus: 'granted' | 'denied' | 'prompt' | 'unknown' = 'unknown';
 
-    // Check camera permission by attempting to access the camera
+    // Camera
     try {
       await navigator.mediaDevices.getUserMedia({ video: true });
       cameraStatus = 'granted';
@@ -386,7 +378,7 @@ export default function QrScanPage() {
       }
     }
 
-    // Check geolocation permission by attempting to access geolocation
+    // Location
     if (navigator.geolocation) {
       await new Promise<void>((resolve) => {
         navigator.geolocation.getCurrentPosition(
@@ -398,11 +390,11 @@ export default function QrScanPage() {
             if (error.code === error.PERMISSION_DENIED) {
               geoStatus = 'denied';
             } else {
-              geoStatus = 'prompt'; // Covers TIMEOUT or POSITION_UNAVAILABLE
+              geoStatus = 'prompt';
             }
             resolve();
           },
-          { timeout: 5000 } // More realistic timeout for mobile devices
+          { timeout: 5000 }
         );
       });
     } else {
@@ -414,10 +406,9 @@ export default function QrScanPage() {
     setPermissionsChecked(true);
   };
 
-  // Only check permissions after mount and when user clicks Next
+  // on first load
   useEffect(() => {
     checkPermissions();
-    // Listen for permission changes
     let cameraPerm: any, geoPerm: any;
     if (typeof navigator !== 'undefined' && navigator.permissions) {
       navigator.permissions.query({ name: 'camera' as PermissionName }).then((perm) => {
@@ -435,12 +426,11 @@ export default function QrScanPage() {
     };
   }, []);
 
-  // When firstPermissionCheck changes to false, re-check permissions
+  // On button click and state change
   useEffect(() => {
     if (!firstPermissionCheck) {
       checkPermissions();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firstPermissionCheck]);
 
   useEffect(() => {
@@ -452,7 +442,7 @@ export default function QrScanPage() {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Only run QR code geolocation effect after permissions popup is dismissed
+  // start qr code
   useEffect(() => {
     if (showPermissionPopup) return;
     let interval: NodeJS.Timeout;
@@ -530,7 +520,6 @@ export default function QrScanPage() {
               </div>
             )}
             <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
-              {/* Only render QrScannerComponent after permissions popup is dismissed */}
               {!showPermissionPopup && <QrScannerComponent />}
               {expanded && qrSize !== null ? (
                 <div
