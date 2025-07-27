@@ -235,14 +235,6 @@ export default function FriendInfo({
 
         {/* Update Meet Interval Section */}
         <div className="border p-4 rounded my-6 max-w-md mx-auto bg-gray-50 shadow">
-          <button
-            onClick={fetchConnection}
-            disabled={loadingMeet}
-            className="bg-blue-600 text-white px-4 py-2 rounded mr-3"
-          >
-            Get Connection & meetInterval
-          </button>
-
           {currentConnectionId && (
             <>
               <p className="mt-3 break-words"><strong>Connection ID:</strong> {currentConnectionId}</p>
@@ -251,7 +243,7 @@ export default function FriendInfo({
                 <input
                   type="number"
                   min={1}
-                  value={meetInterval}
+                  value={meetInterval ?? 1}
                   onChange={(e) =>
                     setMeetInterval(e.target.value === "" ? "" : Number(e.target.value))
                   }
