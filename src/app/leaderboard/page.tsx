@@ -60,7 +60,6 @@ export default function Leaderboard() {
       const userSnap = await getDocs(collection(db, "users"));
       const usersMap: Record<string, UserData> = {};
 
-      // Step 1: Get all users
       await Promise.all(
         userSnap.docs.map(async (userDoc) => {
           const data = userDoc.data();
@@ -76,7 +75,6 @@ export default function Leaderboard() {
       const streakEntries: StreakEntry[] = [];
       const seenConnections = new Set<string>();
 
-      // Step 2: Loop through each user and their friends
       for (const userId of Object.keys(usersMap)) {
         const friendsSnap = await getDocs(collection(db, `users/${userId}/friends`));
 
@@ -108,7 +106,6 @@ export default function Leaderboard() {
         }
       }
 
-      // Step 3: Sort and return top 10
       const top10 = streakEntries
         .sort((a, b) => b.streak - a.streak)
         .slice(0, 10);
