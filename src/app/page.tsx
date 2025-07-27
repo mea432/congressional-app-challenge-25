@@ -3,15 +3,15 @@ import Image from "next/image";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center px-6 text-gray-800">
+    <main className="min-h-screen flex flex-col justify-center items-center text-gray-800">
       <Image
         src="/group-of-friends.JPG"
         alt="Background"
-        fill // Fills the parent container
-        style={{ objectFit: 'cover', zIndex: -1 }} // Covers the area and positions behind
+        fill
+        style={{ objectFit: 'cover', zIndex: -1 }}
       />
       <a href="https://www.vecteezy.com/free-photos/autumn" className="absolute bottom-0 right-0 text-white">Autumn Stock photos by Vecteezy</a>
-      <div className="w-full max-w-4xl p-8 rounded-2xl shadow-lg border border-gray-200 bg-white">
+      <div className="max-w-4xl h-screen sm:h-auto p-8 sm:rounded-2xl sm:shadow-lg sm:border sm:border-gray-200 bg-white/60 backdrop-blur-sm">
         <Image src="/logo.png" alt="logo" width={150} height={150} className="mx-auto" />
         <h1 className="text-center text-5xl font-extrabold text-blue-600 mb-6">
           [App name]
