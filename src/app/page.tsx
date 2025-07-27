@@ -16,7 +16,7 @@ export default function LandingPage() {
           <li>• Add friends and build meaningful connections.</li>
           <li>• Meet up in person and log meetups by scanning QR codes.</li>
           <li>• Capture memories with optional meetup selfies.</li>
-          <li>• Build streaks by meeting consistently—daily, weekly, or monthly.</li>
+          <li>• Build streaks by meeting consistently whether daily, weekly, or monthly.</li>
           <li>• Earn points for streaks and compete on the leaderboard.</li>
         </ul>
 
