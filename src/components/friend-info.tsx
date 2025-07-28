@@ -254,7 +254,7 @@ export default function FriendInfo({
               <button
                 onClick={updateMeetInterval}
                 disabled={loadingMeet}
-                className="bg-green-600 text-white px-4 py-2 rounded mt-3"
+                className="bg-green-600 text-white px-4 py-2 rounded mt-3 cursor-pointer"
               >
                 Update meetInterval
               </button>

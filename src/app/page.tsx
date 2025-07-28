@@ -3,25 +3,25 @@ import Image from "next/image";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center text-gray-800">
+    <main className="relative min-h-screen flex flex-col justify-center items-center text-gray-800">
       <Image
         src="/group-of-friends.JPG"
         alt="Background"
         fill
         style={{ objectFit: 'cover', zIndex: -1 }}
       />
-      <a href="https://www.vecteezy.com/free-photos/autumn" className="absolute bottom-0 right-0 text-white">Autumn Stock photos by Vecteezy</a>
+      <Link href="https://www.vecteezy.com/free-photos/autumn" className="absolute bottom-2 right-2 text-white bg-black/60 px-2 py-1 text-sm rounded z-10">Autumn Stock photos by Vecteezy</Link>
       <div className="max-w-4xl h-screen sm:h-auto p-8 sm:rounded-2xl sm:shadow-lg sm:border sm:border-gray-200 bg-white/60 backdrop-blur-sm">
-        <Image src="/logo.png" alt="logo" width={150} height={150} className="mx-auto" />
-        <h1 className="text-center text-5xl font-extrabold text-blue-600 mb-6">
+        <Image src="/logo.png" alt="logo" width={100} height={100} className="mx-auto" />
+        <h1 className="text-center text-4xl font-extrabold text-blue-600 mb-6">
           [App name]
         </h1>
 
-        <p className="text-center text-lg md:text-xl mb-8">
+        <p className="text-center text-lg mb-8">
           Tired of endless scrolling and online addiction? [App name] is the reverse social media app that brings friends back together in person.
         </p>
 
-        <ul className="text-center max-w-xl mx-auto mb-12 space-y-3 text-gray-700">
+        <ul className="list-disc text-left max-w-xl mx-auto mb-12 space-y-3 text-gray-700">
           <li>Add friends and build meaningful connections.</li>
           <li>Meet up in person and log meetups by scanning QR codes.</li>
           <li>Capture memories with optional meetup selfies.</li>
