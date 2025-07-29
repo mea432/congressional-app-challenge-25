@@ -85,6 +85,8 @@ function FriendsList({ user }: { user: any }) {
     setFriends(friendsList);
   };
 
+  console.log("you suck")
+
   useEffect(() => {
     if (!user) return;
     fetchFriends();
