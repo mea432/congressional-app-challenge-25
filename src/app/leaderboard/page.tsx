@@ -147,8 +147,8 @@ export default function Leaderboard() {
                       <li
                         key={u.id}
                         className={`rounded-lg shadow px-4 py-3 flex items-center justify-between ${isCurrentUser
-                            ? "bg-yellow-100 border border-yellow-300"
-                            : "bg-white"
+                          ? "bg-yellow-100 border border-yellow-300"
+                          : "bg-white"
                           }`}
                       >
                         <div className="flex items-center space-x-3">
@@ -195,8 +195,8 @@ export default function Leaderboard() {
                         <li
                           key={id}
                           className={`rounded-lg shadow px-4 py-3 flex items-center justify-between ${isCurrentUserInvolved
-                              ? "bg-yellow-100 border border-yellow-300"
-                              : "bg-white"
+                            ? "bg-yellow-100 border border-yellow-300"
+                            : "bg-white"
                             }`}
                         >
                           <div className="flex items-center space-x-3">
