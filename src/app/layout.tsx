@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "App Name",
+  title: "UnReel",
   description: "Reverse social media app designed for the Congressional App Challenge",
 };
 

@@ -14,11 +14,11 @@ export default function LandingPage() {
       <div className="max-w-4xl h-screen sm:h-auto p-8 sm:rounded-2xl sm:shadow-lg sm:border sm:border-gray-200 bg-white/60 backdrop-blur-sm">
         <Image src="/logo.png" alt="logo" width={100} height={100} className="mx-auto" />
         <h1 className="text-center text-4xl font-extrabold text-blue-600 mb-6">
-          [App name]
+          UnReel
         </h1>
 
         <p className="text-center text-lg mb-8">
-          Tired of endless scrolling and online addiction? [App name] is the reverse social media app that brings friends back together in person.
+          Tired of endless scrolling and online addiction? UnReel is the reverse social media app that brings friends back together in person.
         </p>
 
         <ul className="list-disc text-left max-w-xl mx-auto mb-12 space-y-3 text-gray-700">
