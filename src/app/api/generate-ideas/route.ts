@@ -29,30 +29,31 @@ export async function POST(req: NextRequest) {
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4-turbo",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
           content: `You are a helpful and creative friend, suggesting activities for a user and their friend, ${friendName}. Your goal is to foster their real-world friendship.
 - Today's date is ${today}.
 - Analyze their past meetups to find patterns (e.g., "You seem to enjoy hiking," "You often grab coffee").
-- Suggest three unique and actionable ideas based on this history.
-- If they do something often, suggest a new twist on it or point out it's been a while.
-- If they have no history, suggest some simple, classic first-time meetup ideas.
-- Be encouraging and friendly.
-- IMPORTANT: Provide only the 3 ideas, each separated by a newline. Do not use numbering, dashes, or any other formatting.`
+- Return a JSON object with two keys: "summary" and "ideas".
+- The "summary" should be a short, friendly, 1-2 sentence analysis of their meetup history.
+- The "ideas" should be an array of three unique and actionable suggestion strings.
+- If they have no history, the summary should be an encouraging welcome, and the ideas should be simple first-time meetups.`
         },
         {
           role: "user",
-          content: `Here is my meetup history with ${friendName}:\n${history}\n\nBased on our history, what should we do next?`
+          content: `Here is my meetup history with ${friendName}:\n${history}\n\nBased on our history, what should we do next? Please return the response as a JSON object with a "summary" and an "ideas" array.`
         }
       ],
       temperature: 0.7,
-      max_tokens: 200,
+      max_tokens: 250,
     });
 
-    const ideas = completion.choices[0]?.message?.content?.trim();
-    if (ideas) {
-      return NextResponse.json({ ideas: ideas.split('\n').filter(idea => idea.trim() !== '') });
+    const content = completion.choices[0]?.message?.content;
+    if (content) {
+      const parsed = JSON.parse(content);
+      return NextResponse.json(parsed);
     } else {
       return NextResponse.json({ error: 'Failed to generate ideas.' }, { status: 500 });
     }

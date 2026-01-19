@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "./ui/button";
 
 type Props = {
   onClose: () => void;
@@ -13,6 +14,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
 
   useEffect(() => {
     const startCamera = async () => {
@@ -34,6 +36,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
         tracks.forEach((track) => track.stop());
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const capturePhoto = () => {
@@ -49,12 +52,37 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    const dataUrl = canvas.toDataURL("image/jpeg");
+    setPreviewUrl(dataUrl);
+
     canvas.toBlob((blob) => {
       if (blob) {
         setImageBlob(blob);
-        setPreviewUrl(URL.createObjectURL(blob));
       }
     }, "image/jpeg");
+  };
+
+  const generateCaption = async () => {
+    if (!previewUrl) return;
+    setIsGeneratingCaption(true);
+    try {
+      const res = await fetch('/api/generate-caption', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: previewUrl }),
+      });
+      const data = await res.json();
+      if (data.caption) {
+        setCaption(data.caption);
+      } else {
+        throw new Error(data.error || 'Failed to generate caption');
+      }
+    } catch (err) {
+      alert("Error generating caption.");
+      console.error("Caption generation error:", err);
+    } finally {
+      setIsGeneratingCaption(false);
+    }
   };
 
   const upload = async () => {
@@ -63,7 +91,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
 
     const formData = new FormData();
     formData.append("image", imageBlob);
-    formData.append("key", "e42686b6e29d3a7a92bab30aca542c96");
+    formData.append("key", "e42686b6e29d3a7a92bab30aca542c96"); // This seems to be a public key for a free image hosting service
 
     try {
       const res = await fetch("https://api.imgbb.com/1/upload", {
@@ -88,7 +116,7 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-4 max-w-sm w-full relative">
         <button
           onClick={onClose}
@@ -107,12 +135,12 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
               muted
               className="w-full rounded"
             />
-            <button
+            <Button
               onClick={capturePhoto}
-              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full cursor-pointer"
+              className="mt-2 w-full"
             >
               Capture
-            </button>
+            </Button>
           </>
         ) : (
           <>
@@ -121,20 +149,30 @@ export default function SelfieCaptureModal({ onClose, onUpload }: Props) {
               alt="Preview"
               className="w-full rounded mb-2"
             />
-            <textarea
-              placeholder="Optional caption..."
-              className="w-full border border-gray-300 rounded p-2 mb-2 resize-none text-black"
-              rows={2}
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-            />
-            <button
-              onClick={upload}
-              disabled={uploading}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full cursor-pointer"
-            >
-              {uploading ? "Uploading..." : "Upload"}
-            </button>
+            <div className="space-y-2">
+              <textarea
+                placeholder="Optional caption..."
+                className="w-full border border-gray-300 rounded p-2 resize-none text-black"
+                rows={2}
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+              />
+              <Button
+                onClick={generateCaption}
+                disabled={isGeneratingCaption}
+                variant="outline"
+                className="w-full text-black"
+              >
+                {isGeneratingCaption ? "Generating..." : "✨ Generate Caption"}
+              </Button>
+              <Button
+                onClick={upload}
+                disabled={uploading || isGeneratingCaption}
+                className="w-full"
+              >
+                {uploading ? "Uploading..." : "Confirm Meetup"}
+              </Button>
+            </div>
           </>
         )}
       </div>
