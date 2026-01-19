@@ -7,20 +7,47 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
+    const { friendName, meetups } = await req.json();
+
+    if (!friendName || !meetups) {
+      return NextResponse.json({ error: 'friendName and meetups are required.' }, { status: 400 });
+    }
+
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    let history = "Here are the last 20 meetups:\n";
+    if (meetups.length > 0) {
+      history += meetups
+        .map((m: { caption: string; timestamp: number }) => {
+          const date = new Date(m.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          return `- ${date}: ${m.caption || "No caption"}`;
+        })
+        .join('\n');
+    } else {
+      history = "There are no past meetups on record.";
+    }
+
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4-turbo",
       messages: [
         {
           role: "system",
-          content: "You are an assistant for an app called UnReel, which is a 'reverse social media' app that encourages users to meet up in person. Your goal is to suggest fun, simple, and low-cost activities for two friends to do together in the real world. Provide 3 distinct ideas. Do not number them; instead, separate each idea with a newline."
+          content: `You are a helpful and creative friend, suggesting activities for a user and their friend, ${friendName}. Your goal is to foster their real-world friendship.
+- Today's date is ${today}.
+- Analyze their past meetups to find patterns (e.g., "You seem to enjoy hiking," "You often grab coffee").
+- Suggest three unique and actionable ideas based on this history.
+- If they do something often, suggest a new twist on it or point out it's been a while.
+- If they have no history, suggest some simple, classic first-time meetup ideas.
+- Be encouraging and friendly.
+- IMPORTANT: Provide only the 3 ideas, each separated by a newline. Do not use numbering, dashes, or any other formatting.`
         },
         {
           role: "user",
-          content: "Suggest a meetup idea."
+          content: `Here is my meetup history with ${friendName}:\n${history}\n\nBased on our history, what should we do next?`
         }
       ],
       temperature: 0.7,
-      max_tokens: 100,
+      max_tokens: 200,
     });
 
     const ideas = completion.choices[0]?.message?.content?.trim();
@@ -31,6 +58,9 @@ export async function POST(req: NextRequest) {
     }
   } catch (error) {
     console.error('OpenAI API error:', error);
+    if (error instanceof OpenAI.APIError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

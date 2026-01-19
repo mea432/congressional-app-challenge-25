@@ -5,6 +5,7 @@ import { useState, useRef } from "react";
 import { useGesture } from '@use-gesture/react';
 import { animated, useSpring } from '@react-spring/web';
 import MainContent from "./main-content";
+import { Button } from "./ui/button";
 
 export default function FriendInfo({
   friendId,
@@ -30,6 +31,37 @@ export default function FriendInfo({
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [{ y, scale }, api] = useSpring(() => ({ y: 0, scale: 1 }));
   const tapRef = useRef(0);
+  
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const getMeetupIdeas = async () => {
+    setIsGenerating(true);
+    setSuggestions([]);
+    try {
+      const response = await fetch('/api/generate-ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          friendName: friendUsername,
+          meetups: meetups.slice(0, 20) // Pass last 20 meetups
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch ideas');
+      }
+      const data = await response.json();
+      if (data.ideas) {
+        setSuggestions(data.ideas);
+      }
+    } catch (error) {
+      console.error('Failed to fetch meetup ideas:', error);
+      alert((error as Error).message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const bind = useGesture({
     onDrag: ({ event, down, movement: [, my], last }) => {
@@ -201,6 +233,27 @@ export default function FriendInfo({
         {streak !== undefined && (
           <p className="text-center mb-4"><b>Streak:</b> {streak}</p>
         )}
+        
+        {/* AI Meetup Suggestions */}
+        <div className="text-center my-4 p-4 border rounded-lg">
+          <Button onClick={getMeetupIdeas} disabled={isGenerating}>
+            Suggest a Meetup Idea
+          </Button>
+
+          {isGenerating && <p className="mt-4 text-gray-500">Generating ideas...</p>}
+
+          {suggestions.length > 0 && (
+            <div className="mt-4 text-left">
+              <h3 className="font-semibold mb-2">Here are a few ideas:</h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                {suggestions.map((idea, index) => (
+                  <li key={index}>{idea}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
 
         <h3 className="text-lg font-semibold mt-4">Meetups</h3>
         <ul className="space-y-4">
